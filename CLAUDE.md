@@ -14,6 +14,7 @@ This project has several documentation files, each serving a specific purpose:
 - **README.md**: User-facing project introduction and quick start
 - **ARCHITECTURE.md**: Detailed technical design, architecture decisions, and implementation details
 - **CONTRIBUTING.md**: Contributor guidelines, development workflow, coding standards
+- **Package READMEs** (`packages/*/README.md`): Per-package documentation with usage examples and API reference for npm publishing
 - **.claude/commands/**: Slash commands for common development tasks
 
 **When to update documentation:**
@@ -21,6 +22,7 @@ This project has several documentation files, each serving a specific purpose:
 - **CONTRIBUTING.md**: When changing development workflow, coding standards, or adding new tools
 - **README.md**: When adding features, changing installation steps, or updating examples
 - **CLAUDE.md**: When changing project structure, adding new concepts, or updating implementation phases
+- **Package README.md**: When creating new format packages or adding/changing format-specific features
 
 **IMPORTANT**: Always check if documentation needs updating after making significant code changes. Use the `/check-docs` slash command to verify documentation consistency.
 
@@ -190,6 +192,7 @@ pnpm --filter @dastardly/json test
 3. Add position tracking to any new AST nodes
 4. Consider how it affects cross-format conversion
 5. **Check if documentation needs updating** (especially ARCHITECTURE.md)
+6. Plan to create package README.md when adding new format packages
 
 ### After Making Changes:
 1. Update relevant documentation (see "Documentation Structure" above)

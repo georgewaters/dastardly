@@ -170,6 +170,18 @@ To add support for a new format:
    - Test roundtrip conversion (parse → serialize → parse)
    - Test edge cases specific to the format
 
+6. **Create package README.md**:
+   - Location: `packages/<format-name>/README.md`
+   - Should document:
+     - Format name and description
+     - Installation instructions (npm/pnpm)
+     - Basic usage examples (parsing and serializing)
+     - API reference for all public functions and classes
+     - Format-specific features and limitations
+     - Links to related packages and main documentation
+   - Use `IMPLEMENTATION_GUIDE.md` Step 8 as a template
+   - Reference `packages/json/README.md` for a complete example
+
 ## Testing Guidelines
 
 ### What to Test
@@ -300,7 +312,7 @@ How was this tested?
 
 ## Checklist
 - [ ] Tests added/updated
-- [ ] Documentation updated
+- [ ] Documentation updated (README.md created for new packages)
 - [ ] All tests passing
 - [ ] TypeScript strict mode passing
 ```

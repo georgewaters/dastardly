@@ -508,6 +508,10 @@ Each format package follows a consistent pattern. See `IMPLEMENTATION_GUIDE.md` 
 ### Package Structure
 ```
 packages/format-name/
+├── README.md             # Package documentation
+├── package.json
+├── tsconfig.json
+├── vitest.config.ts
 ├── src/
 │   ├── index.ts          # Public API (parse, stringify, etc.)
 │   ├── parser.ts         # FormatParser extends TreeSitterParser
@@ -547,6 +551,14 @@ packages/format-name/
 - **Serializer**: 95%+ coverage (modes, options, edge cases)
 - **Integration**: Roundtrip tests, real-world samples
 - **Target**: 115+ tests per package (JSON has 115)
+
+### Documentation Standards
+- **README.md Required**: Every package must have a comprehensive README.md
+- **Completeness**: README should document all public APIs, usage patterns, and format-specific behavior
+- **Consistency**: Follow the template in `IMPLEMENTATION_GUIDE.md` Step 8
+- **Examples**: Include real-world usage examples and edge cases
+- **References**: Link to `packages/json/README.md` as the reference implementation
+- **User-Facing**: README serves as primary documentation for npm users
 
 ### JSON Package (Reference Implementation)
 - **Status**: ✅ Complete

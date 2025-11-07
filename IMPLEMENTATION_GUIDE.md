@@ -7,6 +7,7 @@ This guide shows how to implement new format packages (YAML, XML, CSV, TOML, etc
 Each format package follows this structure:
 ```
 packages/format-name/
+├── README.md             # Package documentation (created in Step 8)
 ├── package.json
 ├── tsconfig.json
 ├── vitest.config.ts
@@ -78,6 +79,8 @@ export default defineConfig({
   },
 });
 ```
+
+**Note on README.md**: The package README.md will be created in **Step 8** after implementation is complete. It should document installation, usage examples, API reference, and format-specific features.
 
 ## Step 2: Utils Implementation
 
@@ -427,7 +430,35 @@ function expectRoundtrip(source: string) {
 
 ## Step 8: Documentation
 
-Create README.md for the package:
+### File Location and Timing
+
+Create `README.md` at **`packages/format-name/README.md`** after implementation is complete (Steps 2-7). The README should be written when you have:
+- Completed parser, serializer, and utils implementation
+- Written comprehensive tests
+- Identified format-specific features and limitations
+
+### What to Document
+
+The README should include:
+1. **Package name and description** - What format does this parse/serialize?
+2. **Installation instructions** - npm/pnpm commands
+3. **Quick start examples** - Basic parsing and serializing
+4. **API reference** - All public functions, classes, and types
+5. **Format-specific features** - Document features from Step 7
+6. **Format limitations** - Conversions that don't work, edge cases
+7. **Usage examples** - Real-world scenarios
+8. **Links to related packages** - Other dASTardly packages
+9. **Links to main documentation** - Repository, architecture docs
+
+### Integration with Root README
+
+After creating the package README:
+- Update the root `README.md` to list the new format in the features section
+- Ensure the package is listed with other format packages
+
+### README Template
+
+Use the following template as a starting point:
 
 ```markdown
 # @dastardly/format-name
@@ -503,8 +534,8 @@ const output = serialize(doc1, {
 - [ ] Run all tests (`pnpm test`)
 - [ ] Run typecheck (`pnpm typecheck`)
 - [ ] Run build (`pnpm build`)
-- [ ] Write README.md
-- [ ] Update root README.md (add package to list)
+- [ ] Write README.md at `packages/format-name/README.md` with installation, usage, API reference, and format-specific features
+- [ ] Update root README.md to list new format in features section
 - [ ] Commit with conventional commits format
 
 ## Common Pitfalls
