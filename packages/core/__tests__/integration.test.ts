@@ -14,6 +14,7 @@ import {
   findAll,
   toNative,
   type ASTNode,
+  type SourceLocation,
 } from '../src/index.js';
 
 describe('Integration: Complex AST operations', () => {
@@ -89,9 +90,9 @@ describe('Integration: Complex AST operations', () => {
 
     // All nodes should have the same location
     expect(locations).toHaveLength(2);
-    expect(locations[0].start).toEqual(start);
-    expect(locations[0].end).toEqual(end);
-    expect(locations[0].source).toBe('yaml');
+    expect(locations[0]!.start).toEqual(start);
+    expect(locations[0]!.end).toEqual(end);
+    expect(locations[0]!.source).toBe('yaml');
   });
 
   it('handles deeply nested structures', () => {
