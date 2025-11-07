@@ -136,7 +136,7 @@ To add support for a new format:
        "test": "vitest"
      },
      "dependencies": {
-       "@dastardly/core": "workspace:*",
+       "@dastardly/core": "workspace:^",
        "tree-sitter": "^0.21.0"
      },
      "devDependencies": {
@@ -181,6 +181,69 @@ To add support for a new format:
      - Links to related packages and main documentation
    - Use `IMPLEMENTATION_GUIDE.md` Step 8 as a template
    - Reference `packages/json/README.md` for a complete example
+
+## Versioning and Dependencies
+
+### Coordinated Releases
+
+All dASTardly packages are versioned together using **coordinated releases**. When one package is updated, all packages receive the same version number. This ensures compatibility and simplifies the user experience.
+
+**Example**: If `@dastardly/core` moves from v0.1.0 to v0.2.0, all other packages (`@dastardly/json`, `@dastardly/tree-sitter-runtime`, etc.) also move to v0.2.0, even if they have no code changes.
+
+### Internal Dependencies
+
+Use `workspace:^` for all internal package dependencies:
+
+```json
+{
+  "dependencies": {
+    "@dastardly/core": "workspace:^",
+    "@dastardly/tree-sitter-runtime": "workspace:^"
+  }
+}
+```
+
+**Why workspace:^?**
+
+- During development, `workspace:^` resolves to the local package
+- When published, `workspace:^` converts to a caret range (e.g., `^0.1.0`)
+- Caret ranges allow patch and minor updates while preventing major version mismatches
+- This is the **industry standard** for monorepos with coordinated releases
+
+**What gets published:**
+
+```json
+// Before publish (in monorepo)
+"@dastardly/core": "workspace:^"
+
+// After publish (on npm)
+"@dastardly/core": "^0.1.0"
+```
+
+**User benefits:**
+- Users can independently update packages for bug fixes
+- Example: Install `@dastardly/json@0.1.0`, later update just `@dastardly/core` to `0.1.5` for a critical fix
+- Version ranges prevent incompatible major version combinations
+
+### External Dependencies
+
+Use standard semver ranges for external dependencies:
+
+```json
+{
+  "dependencies": {
+    "tree-sitter": "^0.21.0",           // Caret range for minor updates
+    "tree-sitter-json": "^0.24.5"       // Caret range for minor updates
+  }
+}
+```
+
+### Version Consistency
+
+- All packages share the same version number
+- Breaking changes in any package trigger a major version bump for all packages
+- Follow [Semantic Versioning](https://semver.org/) strictly
+- Use conventional commits to track changes
 
 ## Testing Guidelines
 

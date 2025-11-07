@@ -19,7 +19,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@dastardly/core": "workspace:*",
+    "@dastardly/core": "workspace:^",
     "tree-sitter": "^0.21.0"
   },
   "devDependencies": {

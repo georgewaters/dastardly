@@ -41,8 +41,8 @@ packages/format-name/
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@dastardly/core": "workspace:*",
-    "@dastardly/tree-sitter-runtime": "workspace:*",
+    "@dastardly/core": "workspace:^",
+    "@dastardly/tree-sitter-runtime": "workspace:^",
     "tree-sitter": "^0.21.1",
     "tree-sitter-format-name": "^x.x.x"  // Find appropriate version
   },
