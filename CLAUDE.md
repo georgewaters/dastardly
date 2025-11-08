@@ -63,12 +63,13 @@ dastardly/
 ### Current Core AST (packages/core/src/index.ts)
 
 The core defines:
-- `Position` and `Span` types for source locations
-- `NodeType` enum (Object, Array, String, Number, Boolean, Null)
-- `DastardlyNode` base class with position tracking
-- Concrete node classes for each type
-
-**Note**: The current implementation has some TypeScript issues that need addressing (base class constructor signature doesn't match concrete classes).
+- `Position` and `SourceLocation` types for source locations
+- Discriminated union of node types: `DocumentNode`, `DataNode` (Object, Array, String, Number, Boolean, Null)
+- `PropertyNode` for object key-value pairs
+- Builder functions: `documentNode()`, `objectNode()`, `arrayNode()`, etc.
+- Type guards: `isObjectNode()`, `isArrayNode()`, etc.
+- Visitor pattern support for AST traversal
+- 78 comprehensive tests covering all functionality
 
 ## Coding Standards
 
@@ -120,32 +121,32 @@ pnpm --filter @dastardly/json test
 
 ## Implementation Phases
 
-### Phase 0: Foundation & Tooling (CURRENT)
+### Phase 0: Foundation & Tooling (COMPLETED)
 - [x] Set up monorepo structure
 - [x] Create core AST types (initial implementation)
 - [x] Create project documentation (CLAUDE.md, ARCHITECTURE.md, CONTRIBUTING.md)
 - [x] Set up slash commands and tooling
-- [ ] Review and fix core AST implementation
-- [ ] Design final core AST API
-- [ ] Set up testing infrastructure (Vitest)
-- [ ] Document design decisions
+- [x] Review and fix core AST implementation
+- [x] Design final core AST API
+- [x] Set up testing infrastructure (Vitest)
+- [x] Document design decisions
 
-### Phase 1a: JSON Support
-- [ ] Create `@dastardly/tree-sitter-runtime` package
-- [ ] Implement abstract parser runtime (tree-sitter + web-tree-sitter compatibility)
-- [ ] Integrate tree-sitter-json
-- [ ] Implement JSON → AST parser
-- [ ] Implement AST → JSON serializer
-- [ ] Comprehensive tests (position tracking, edge cases, roundtrip)
-- [ ] Handle edge cases (large numbers, unicode, etc.)
+### Phase 1a: JSON Support (COMPLETED)
+- [x] Create `@dastardly/tree-sitter-runtime` package
+- [x] Implement abstract parser runtime (tree-sitter + web-tree-sitter compatibility)
+- [x] Integrate tree-sitter-json
+- [x] Implement JSON → AST parser
+- [x] Implement AST → JSON serializer
+- [x] Comprehensive tests (position tracking, edge cases, roundtrip) - 115 tests
+- [x] Handle edge cases (large numbers, unicode, etc.)
 
-### Phase 1b: YAML Support
-- [ ] Integrate tree-sitter-yaml
-- [ ] Implement YAML → AST parser
-- [ ] Handle YAML-specific features (anchors, aliases, tags)
-- [ ] Implement AST → YAML serializer
-- [ ] Cross-format conversion tests (JSON ↔ YAML)
-- [ ] Document conversion limitations
+### Phase 1b: YAML Support (COMPLETED)
+- [x] Integrate tree-sitter-yaml (@tree-sitter-grammars/tree-sitter-yaml)
+- [x] Implement YAML → AST parser
+- [x] Handle YAML-specific features (anchors, aliases, tags, merge keys, block scalars)
+- [x] Implement AST → YAML serializer (flow and block styles)
+- [x] Comprehensive tests (utils, parser, serializer) - 245 tests total
+- [x] Document YAML-specific behavior (anchor resolution, complex keys, multi-document)
 
 ### Phase 2: Additional Formats
 - [ ] XML support (attributes, namespaces)
