@@ -39,22 +39,32 @@ describe('CSV Parser', () => {
       expect(first.properties[1].value.value).toBe('Hello, world');
     });
 
-    it.skip('should handle empty fields', () => {
-      // LIMITATION: tree-sitter-csv grammar doesn't support empty fields
-      // This is a known limitation of the upstream grammar
+    it('should handle empty fields', () => {
+      // External scanner now supports empty fields (Phase 2)
       const csv = 'a,b,c\n1,,3\n,2,';
       const result = parseCSV(csv);
 
       expect(isArrayNode(result.root)).toBe(true);
       if (!isArrayNode(result.root)) return;
 
+      // First row: 1,,3 - middle field is empty
       const first = result.root.elements[0];
       expect(isObjectNode(first)).toBe(true);
       if (!isObjectNode(first)) return;
-
       expect(first.properties[1]?.value.type).toBe('String');
       if (first.properties[1]?.value.type !== 'String') return;
       expect(first.properties[1].value.value).toBe('');
+
+      // Second row: ,2, - leading and trailing fields are empty
+      const second = result.root.elements[1];
+      expect(isObjectNode(second)).toBe(true);
+      if (!isObjectNode(second)) return;
+      expect(second.properties[0]?.value.type).toBe('String');
+      if (second.properties[0]?.value.type !== 'String') return;
+      expect(second.properties[0].value.value).toBe('');
+      expect(second.properties[2]?.value.type).toBe('String');
+      if (second.properties[2]?.value.type !== 'String') return;
+      expect(second.properties[2].value.value).toBe('');
     });
   });
 

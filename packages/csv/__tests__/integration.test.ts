@@ -102,9 +102,9 @@ describe('Public API', () => {
   describe('Real-world CSV', () => {
     it('parses employee data', () => {
       const csv = `name,department,salary
-Alice Smith,Engineering,100000
-Bob Jones,Marketing,85000
-Carol White,Sales,90000`;
+"Alice Smith",Engineering,100000
+"Bob Jones",Marketing,85000
+"Carol White",Sales,90000`;
 
       const doc = parse(csv);
       expect(doc.body).toMatchObject({
