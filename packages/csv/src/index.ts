@@ -1,0 +1,92 @@
+// @dastardly/csv - CSV parser and serializer
+
+import type { DocumentNode, DataNode, FormatPackage } from '@dastardly/core';
+import { isDocumentNode } from '@dastardly/core';
+import { NodeTreeSitterRuntime } from '@dastardly/tree-sitter-runtime';
+import CSV_LANGUAGE from '@dastardly/tree-sitter-csv';
+
+// Re-export main classes and types
+export { CSVParser } from './parser.js';
+export type { CSVParseOptions } from './parser.js';
+export type { CSVSerializeOptions } from './serializer.js';
+
+// Re-export utilities
+export {
+  escapeField,
+  unescapeField,
+  needsQuoting,
+  parseCSVNumber,
+  normalizeLineEnding,
+  type QuoteStrategy,
+} from './utils.js';
+
+import { CSVParser } from './parser.js';
+import { serialize as serializeNode, type CSVSerializeOptions } from './serializer.js';
+
+/**
+ * CSV format package implementing the FormatPackage interface.
+ * Provides parsing and serialization for CSV (Comma-Separated Values) documents.
+ *
+ * Supports multiple delimiters (CSV, TSV, PSV) and various formatting options.
+ *
+ * @example
+ * ```typescript
+ * import { csv } from '@dastardly/csv';
+ *
+ * // Parse CSV with headers
+ * const ast = csv.parse('name,age\nAlice,30\nBob,25');
+ *
+ * // Serialize with custom delimiter
+ * const output = csv.serialize(ast, { delimiter: '\t' });
+ * console.log(output);
+ * // name	age
+ * // Alice	30
+ * // Bob	25
+ * ```
+ */
+export const csv: FormatPackage<CSVSerializeOptions> = {
+  /**
+   * Parse CSV string into a dASTardly DocumentNode.
+   *
+   * @param source - CSV string to parse
+   * @returns DocumentNode AST
+   * @throws ParseError if source is invalid CSV
+   */
+  parse(source: string): DocumentNode {
+    const runtime = new NodeTreeSitterRuntime();
+    const parser = new CSVParser(runtime, CSV_LANGUAGE.csv);
+    return parser.parse(source);
+  },
+
+  /**
+   * Parse CSV string and return just the body (DataNode).
+   * Convenience for parse(source).body
+   *
+   * @param source - CSV string to parse
+   * @returns DataNode AST (Array of Objects or Array of Arrays)
+   * @throws ParseError if source is invalid CSV
+   */
+  parseValue(source: string): DataNode {
+    return this.parse(source).body;
+  },
+
+  /**
+   * Serialize a dASTardly AST node to CSV string.
+   *
+   * Accepts either DocumentNode or DataNode. If a DataNode is provided,
+   * it will be serialized directly. The root must be an ArrayNode containing
+   * either Objects (for row-based CSV with headers) or Arrays (for raw tabular data).
+   *
+   * @param node - DocumentNode or DataNode to serialize
+   * @param options - CSV serialization options
+   * @returns CSV string
+   * @throws Error if node structure is incompatible with CSV format
+   */
+  serialize(node: DocumentNode | DataNode, options?: CSVSerializeOptions): string {
+    const dataNode = isDocumentNode(node) ? node.body : node;
+    return serializeNode(dataNode, options ?? {});
+  },
+};
+
+// Convenience exports for destructuring
+export const { parse, parseValue, serialize } = csv;

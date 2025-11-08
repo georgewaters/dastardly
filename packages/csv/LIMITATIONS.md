@@ -2,6 +2,40 @@
 
 This document tracks known limitations of the CSV parser that should be addressed in future improvements.
 
+## Single-Character Text Fields Not Supported
+
+**Issue**: The parser cannot parse single-character unquoted text fields (e.g., `a\n1\n2` where 'a' is a single letter).
+
+**Root Cause**: The underlying tree-sitter-csv grammar in `@dastardly/tree-sitter-csv` requires text fields to have at least 2 characters. In `common/define-grammar.js`, the `text` rule is:
+```javascript
+text: _ => token(choice(
+  new RegExp(`[^${separator}\\d\\s"][^${separator} \\n\\r"]+`),  // + means "1 or more"
+  seq('"', repeat(choice(/[^"]/, '""')), '"'),
+)),
+```
+
+The `+` quantifier in the regex requires at least one character after the first character, making single-character fields invalid.
+
+**Proposed Fix**: Change the `+` quantifier to `*` (zero or more) in the grammar:
+```javascript
+text: _ => token(choice(
+  new RegExp(`[^${separator}\\d\\s"][^${separator} \\n\\r"]*`),  // * means "0 or more"
+  seq('"', repeat(choice(/[^"]/, '""')), '"'),
+)),
+```
+
+**Blocked By**: Need to set up tree-sitter-cli development workflow for regenerating parsers from the modified grammar.
+
+**Impact**:
+- Single-character column headers fail to parse (e.g., `a,b,c`)
+- Single-letter values in data rows fail to parse (e.g., `name\nA`)
+- Single-digit numbers work (they match the `number` rule instead)
+- Quoted single characters work (e.g., `"a"`)
+- This violates common CSV usage patterns with short column names
+- See skipped tests: `__tests__/integration.test.ts` - "supports CRLF line endings", "can be instantiated and reused"
+
+**Workaround**: Quote all single-character text fields (e.g., `"a"\n"1"\n"2"`) or ensure all text fields have at least 2 characters.
+
 ## Empty Fields Not Supported
 
 **Issue**: The parser currently does not support empty fields (e.g., `a,b,c\n1,,3` where the second field is empty).
