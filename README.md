@@ -2,13 +2,29 @@
 
 A high-performance data format parser and serializer that uses a common AST (Abstract Syntax Tree) to enable cross-format conversion and validation. Built with Tree-sitter for real-time editor performance.
 
+## Project Status
+
+- **Formats Completed**: 4/6 (JSON, YAML, CSV, core infrastructure)
+- **Tests Passing**: 696 across all packages
+- **Current Phase**: Integration testing & additional formats
+- **Next Step**: Add CSV to cross-format integration tests
+
+## Supported Formats
+
+- ✅ **JSON** - Full support with position tracking (113 tests)
+- ✅ **YAML** - Anchors, aliases, tags, merge keys, block scalars (267 tests)
+- ✅ **CSV/TSV/PSV** - RFC 4180 compliant, empty field support via external scanner (98 tests)
+- ⏳ **XML** - Planned (attributes, namespaces, CDATA)
+- ⏳ **TOML** - Planned (tables, dotted keys, datetime types)
+
 ## Features
 
-- **Cross-format conversion**: Seamlessly convert between JSON, YAML, and more
+- **Cross-format conversion**: Seamlessly convert between JSON, YAML, CSV, and more
 - **Position tracking**: Accurate source locations for every node
-- **Real-time performance**: Optimized for editor integrations
+- **Real-time performance**: Optimized for editor integrations (Tree-sitter based)
 - **Type-safe**: Full TypeScript support with strict mode
-- **Extensible**: Easy to add new format support
+- **Extensible**: Easy to add new format support via FormatPackage interface
+- **RFC Compliant**: CSV follows RFC 4180, including empty field support
 
 ## Testing
 
@@ -42,13 +58,14 @@ pnpm -r test
 
 ### Test Coverage
 
-- **@dastardly/core**: 78 tests (AST types, builders, utilities)
+- **@dastardly/core**: 83 tests (AST types, builders, utilities)
 - **@dastardly/tree-sitter-runtime**: 36 tests (parser infrastructure)
-- **@dastardly/json**: 115 tests (JSON parsing and serialization)
-- **@dastardly/yaml**: 245 tests (YAML parsing and serialization)
-- **@dastardly/integration-tests**: Integration and cross-format tests
+- **@dastardly/json**: 113 tests (JSON parsing and serialization)
+- **@dastardly/yaml**: 267 tests (YAML parsing and serialization with advanced features)
+- **@dastardly/csv**: 98 tests (CSV/TSV/PSV parsing, serialization, RFC 4180 compliance)
+- **@dastardly/integration-tests**: 99 tests (cross-format conversions, roundtrip, position tracking)
 
-Total: **474+ unit tests** + comprehensive integration tests
+**Total: 696 tests passing** (1 skipped test for CSV variable field counts)
 
 ## Documentation
 

@@ -729,6 +729,102 @@ The integration test suite runs automatically with `pnpm -r test` to ensure comp
 
 See `IMPLEMENTATION_GUIDE.md` for detailed instructions on implementing each format.
 
+## Project Roadmap
+
+### Immediate Next Steps
+
+#### CSV Integration Tests (3-5 hours) ← **Current Priority**
+Add CSV to the cross-format integration test suite:
+
+**Tasks**:
+- Add CSV fixtures to `packages/integration-tests/fixtures/csv/`
+  - Real-world examples (employee data, product catalog)
+  - Edge cases (empty fields, quoted fields, special characters)
+- Add CSV ↔ JSON conversion tests
+- Add CSV ↔ YAML conversion tests
+- Add CSV roundtrip tests (parse → serialize → parse fidelity)
+- Add CSV position tracking tests (validate source locations)
+- Update integration-tests README with CSV examples
+
+**Justification**: Complete CSV work before moving to new formats. Validates that CSV can successfully convert to/from other formats and that empty field support works correctly in cross-format scenarios.
+
+**Benefits**:
+- Catches edge cases in CSV ↔ JSON/YAML conversions
+- Validates empty field handling (our new Phase 2 feature)
+- Establishes pattern for adding future formats to integration tests
+- Ensures CSV structural differences (flat vs nested) are handled correctly
+
+### Short-term Goals (After CSV Integration)
+
+#### TOML Support (20-25 hours)
+Implement `@dastardly/toml` package following established patterns.
+
+**Key Features**:
+- Tables and dotted keys
+- Array of tables syntax
+- Inline tables
+- Datetime type handling
+- Multi-line strings
+
+**Tree-sitter Grammar**: Use `@tree-sitter-grammars/tree-sitter-toml`
+
+**Justification**: TOML is simpler than XML (no attributes/namespaces), making it a good next step after CSV. Popular for config files (Cargo.toml, pyproject.toml). Provides good learning curve progression: JSON (simple) → YAML (complex) → CSV (flat) → TOML (middle ground) → XML (very complex).
+
+**Estimated Effort**: 20-25 hours (simpler than YAML/XML)
+
+#### XML Support (25-30 hours)
+Implement `@dastardly/xml` package with full attribute and namespace support.
+
+**Key Features**:
+- Elements with attributes (stored in metadata)
+- Namespace handling (prefixes, xmlns declarations)
+- CDATA sections
+- Processing instructions
+- Mixed content (text + elements)
+- Entity references
+
+**Tree-sitter Grammar**: Use `@tree-sitter-grammars/tree-sitter-xml`
+
+**Justification**: Complex format demonstrating metadata storage patterns. Widely used for config files, data exchange, document formats. Last format before moving to Phase 3 (validation).
+
+**Estimated Effort**: 25-30 hours (similar to YAML complexity)
+
+### Long-term Goals
+
+#### Phase 3: Validation Infrastructure (40+ hours)
+Implement cross-format schema validation - the core value proposition.
+
+**Key Features**:
+- JSON Schema validator
+- Cross-format schema validation
+- Error reporting with source positions (from original format)
+- Fail-fast option for validation
+- Schema generation from AST
+
+**Use Case Example**:
+```typescript
+// Validate YAML against JSON Schema, report errors at YAML line numbers
+const schema = loadJSONSchema('config.schema.json');
+const yamlDoc = yaml.parse(yamlSource);
+const result = validator.validate(yamlDoc, schema);
+// result.errors contain YAML source locations
+```
+
+**Justification**: This is the ultimate goal - enabling text editors to validate any format against any schema with accurate error reporting.
+
+**Estimated Effort**: 40+ hours
+
+### Roadmap Timeline
+
+| Milestone | Estimated Effort | Target |
+|-----------|-----------------|--------|
+| CSV Integration Tests | 3-5 hours | Immediate |
+| TOML Support | 20-25 hours | Short-term |
+| XML Support | 25-30 hours | Short-term |
+| Phase 3: Validation | 40+ hours | Long-term |
+
+**Total Remaining**: ~90-100 hours to complete all planned features
+
 ## References
 
 - [Tree-sitter Documentation](https://tree-sitter.github.io/tree-sitter/)

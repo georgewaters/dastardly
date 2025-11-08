@@ -160,7 +160,7 @@ pnpm --filter @dastardly/json test
 - [x] Document integration testing patterns (CONTRIBUTING.md, ARCHITECTURE.md)
 - [x] Update all documentation files
 
-### Phase 1d: CSV Support (COMPLETED)
+### Phase 1d: CSV Support (COMPLETED - Phase 2 RFC 4180 Compliant)
 - [x] Fork and integrate tree-sitter-csv (@dastardly/tree-sitter-csv)
 - [x] Migrate tree-sitter-csv bindings from deprecated `nan` to `node-addon-api`
 - [x] Fix tree-sitter 0.21+ compatibility (LANGUAGE_TYPE_TAG, wrapper pattern)
@@ -170,9 +170,16 @@ pnpm --filter @dastardly/json test
 - [x] Support quote strategies (needed, all, nonnumeric, none)
 - [x] Support line ending options (LF, CRLF)
 - [x] Handle nested structures (error, json, flatten)
-- [x] Comprehensive tests (utils, parser, serializer, integration) - 99 tests total (95 passing, 4 skipped for grammar limitations)
-- [x] Document grammar limitations (empty fields, single-char text, variable field counts)
+- [x] **Phase 2: External scanner for RFC 4180 empty field support**
+  - [x] Implement stateless C scanner (src/scanner.c)
+  - [x] Grammar modifications for external scanner integration
+  - [x] Zero-width token detection for empty fields
+  - [x] Support all three variants (CSV, TSV, PSV)
+- [x] Comprehensive tests - 99 tests total (98 passing, 1 skipped for variable field counts)
+- [x] Document remaining limitations (variable field counts - lower priority)
 - [x] Create comprehensive README with API documentation and examples
+
+**Next Immediate Step**: Add CSV to integration tests (cross-format conversions, roundtrip, position tracking) - Est. 3-5 hours
 
 ### Phase 2: Additional Formats
 

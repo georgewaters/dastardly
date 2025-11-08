@@ -345,6 +345,105 @@ Add integration tests when:
 
 Integration tests validate the core value proposition of dASTardly: seamless format conversion while preserving data integrity and source locations.
 
+#### Pattern: Adding a New Format to Integration Tests
+
+After implementing a new format package (e.g., CSV, TOML, XML), follow this checklist:
+
+**1. Create Format Fixtures** (Est. 30-60 minutes)
+
+Add to `packages/integration-tests/fixtures/<format>/`:
+
+```bash
+fixtures/<format>/
+├── primitives.<ext>         # Simple data types
+├── collections.<ext>        # Arrays, objects/tables
+├── real-world/
+│   ├── example1.<ext>      # Real configuration file
+│   └── example2.<ext>      # Another real example
+└── edge-cases/
+    ├── empty-values.<ext>   # Empty/null handling
+    └── special-chars.<ext>  # Special character escaping
+```
+
+**2. Add Cross-Format Conversion Tests** (Est. 1-1.5 hours)
+
+Update `packages/integration-tests/__tests__/cross-format.test.ts`:
+
+```typescript
+describe('<Format> ↔ JSON Conversions', () => {
+  it('converts <format> to JSON', () => {
+    const source = load<Format>Fixture('primitives');
+    const doc = <format>.parse(source);
+    const jsonOutput = json.serialize(doc.body);
+    // Verify structure preserved
+  });
+
+  it('converts JSON to <format>', () => {
+    const source = loadJSONFixture('primitives');
+    const doc = json.parse(source);
+    const output = <format>.serialize(doc.body);
+    // Verify valid <format> output
+  });
+});
+
+describe('<Format> ↔ YAML Conversions', () => {
+  // Similar tests with YAML
+});
+```
+
+**3. Add Roundtrip Tests** (Est. 30-45 minutes)
+
+Update `packages/integration-tests/__tests__/roundtrip.test.ts`:
+
+```typescript
+describe('<Format> Roundtrip', () => {
+  it('preserves data through parse-serialize-parse cycle', () => {
+    const original = load<Format>Fixture('primitives');
+    const doc = <format>.parse(original);
+    const serialized = <format>.serialize(doc.body);
+    const reparsed = <format>.parse(serialized);
+
+    // Compare ASTs for structural equality
+    expect(reparsed.body).toMatchObject(doc.body);
+  });
+});
+```
+
+**4. Add Position Tracking Tests** (Est. 30 minutes)
+
+Update `packages/integration-tests/__tests__/position-tracking.test.ts`:
+
+```typescript
+describe('<Format> Position Tracking', () => {
+  it('tracks positions for all node types', () => {
+    const source = load<Format>Fixture('primitives');
+    const doc = <format>.parse(source);
+
+    // Verify all nodes have valid source locations
+    visitAST(doc.body, (node) => {
+      expect(node.loc).toBeDefined();
+      expect(node.loc.start.line).toBeGreaterThan(0);
+      expect(node.loc.start.column).toBeGreaterThanOrEqual(0);
+    });
+  });
+});
+```
+
+**5. Update Integration Tests README** (Est. 15 minutes)
+
+Add format to `packages/integration-tests/README.md`:
+- Document fixture organization
+- Note any format-specific conversion considerations
+- Document structural differences (e.g., CSV is flat vs nested JSON/YAML)
+
+**Total Estimated Time**: 3-5 hours per new format
+
+**Special Considerations**:
+
+- **CSV**: Flat structure (array-of-objects) vs nested JSON/YAML - test conversions that make sense
+- **TOML**: Datetime types need special handling in conversions
+- **XML**: Attributes stored in metadata - test attribute preservation/conversion
+
 ## Performance Considerations
 
 This library is designed for **real-time editor feedback**, so performance is critical:
