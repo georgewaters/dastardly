@@ -160,6 +160,20 @@ pnpm --filter @dastardly/json test
 - [x] Document integration testing patterns (CONTRIBUTING.md, ARCHITECTURE.md)
 - [x] Update all documentation files
 
+### Phase 1d: CSV Support (COMPLETED)
+- [x] Fork and integrate tree-sitter-csv (@dastardly/tree-sitter-csv)
+- [x] Migrate tree-sitter-csv bindings from deprecated `nan` to `node-addon-api`
+- [x] Fix tree-sitter 0.21+ compatibility (LANGUAGE_TYPE_TAG, wrapper pattern)
+- [x] Implement CSV → AST parser with support for CSV/TSV/PSV
+- [x] Handle headers (auto-detect, custom, or none), type inference, delimiters
+- [x] Implement AST → CSV serializer
+- [x] Support quote strategies (needed, all, nonnumeric, none)
+- [x] Support line ending options (LF, CRLF)
+- [x] Handle nested structures (error, json, flatten)
+- [x] Comprehensive tests (utils, parser, serializer, integration) - 99 tests total (95 passing, 4 skipped for grammar limitations)
+- [x] Document grammar limitations (empty fields, single-char text, variable field counts)
+- [x] Create comprehensive README with API documentation and examples
+
 ### Phase 2: Additional Formats
 
 When implementing a new format package:
@@ -177,7 +191,6 @@ The TypeScript compiler enforces the `FormatPackage` interface contract.
 
 **Upcoming formats**:
 - [ ] XML support (attributes, namespaces)
-- [ ] CSV support (tabular data mapping - note: no indent option!)
 - [ ] TOML support
 
 ### Phase 3: Validation
@@ -240,8 +253,10 @@ The TypeScript compiler enforces the `FormatPackage` interface contract.
 - [Tree-sitter Documentation](https://tree-sitter.github.io/tree-sitter/)
 - [tree-sitter-json](https://github.com/tree-sitter/tree-sitter-json)
 - [tree-sitter-yaml](https://github.com/ikatyang/tree-sitter-yaml)
+- [tree-sitter-csv](https://github.com/amaanq/tree-sitter-csv) (forked as @dastardly/tree-sitter-csv)
 - [JSON Specification](https://www.json.org/)
 - [YAML 1.2 Specification](https://yaml.org/spec/1.2.2/)
+- [RFC 4180 CSV Specification](https://www.rfc-editor.org/rfc/rfc4180.html)
 - [JSON Schema](https://json-schema.org/)
 
 ## Notes

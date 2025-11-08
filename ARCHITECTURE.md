@@ -655,20 +655,60 @@ The integration test suite runs automatically with `pnpm -r test` to ensure comp
   - `packages/json/src/utils.ts` - 195 lines
   - `packages/json/__tests__/` - 4 test files
 
+### YAML Package
+- **Status**: ✅ Complete
+- **Lines of Code**: ~900 production, ~2,000 tests
+- **Test Coverage**: 245 tests, all passing
+- **Implementation Time**: ~25-30 hours
+- **Key Files**:
+  - `packages/yaml/src/parser.ts` - 340 lines
+  - `packages/yaml/src/serializer.ts` - 285 lines
+  - `packages/yaml/src/utils.ts` - 225 lines
+  - `packages/yaml/__tests__/` - 5 test files
+- **Special Features**:
+  - Anchor and alias resolution
+  - Explicit type tags
+  - Merge keys (`<<`)
+  - Block scalars (literal `|` and folded `>`)
+  - Flow and block styles in serialization
+
+### CSV Package
+- **Status**: ✅ Complete
+- **Lines of Code**: ~700 production, ~1,100 tests
+- **Test Coverage**: 99 tests (95 passing, 4 skipped for documented grammar limitations)
+- **Implementation Time**: ~20-25 hours (includes tree-sitter-csv migration)
+- **Key Files**:
+  - `packages/csv/src/parser.ts` - 220 lines
+  - `packages/csv/src/serializer.ts` - 360 lines
+  - `packages/csv/src/utils.ts` - 130 lines
+  - `packages/csv/__tests__/` - 4 test files
+  - `packages/tree-sitter-csv/` - Forked and migrated to node-addon-api
+- **Special Features**:
+  - Multiple delimiter support (CSV, TSV, PSV)
+  - Header handling (auto-detect, custom, or none)
+  - Type inference (optional)
+  - Quote strategies (needed, all, nonnumeric, none)
+  - Line ending options (LF, CRLF)
+  - Nested structure handling (error, json, flatten)
+  - Produces array-of-objects or array-of-arrays
+- **Known Limitations**:
+  - Empty fields not supported (grammar constraint)
+  - Single-character text fields not supported (grammar constraint)
+  - Variable field counts not supported (grammar constraint)
+  - See `packages/csv/LIMITATIONS.md` for details and proposed fixes
+
 ### Remaining Packages
 | Package | Status | Tree-Sitter Grammar | Estimated Effort |
 |---------|--------|---------------------|------------------|
-| YAML    | ⏳ Pending | tree-sitter-yaml | ~20 hours |
 | XML     | ⏳ Pending | tree-sitter-xml | ~25 hours |
-| CSV     | ⏳ Pending | Custom parser | ~15 hours |
 | TOML    | ⏳ Pending | tree-sitter-toml | ~20 hours |
 
 ### Format-Specific Considerations
 
-**YAML**: Anchors, aliases, tags, multi-line strings, multiple documents
-**XML**: Attributes, namespaces, CDATA, processing instructions
-**CSV**: Header handling, delimiter options, type inference
-**TOML**: Tables, array of tables, inline tables, datetime types
+**YAML** (✅ Implemented): Anchors, aliases, tags, multi-line strings, multiple documents, merge keys
+**CSV** (✅ Implemented): Header handling, delimiter options, type inference, quote strategies, nested structure handling, RFC 4180 compliance (with documented grammar limitations)
+**XML** (Pending): Attributes, namespaces, CDATA, processing instructions
+**TOML** (Pending): Tables, array of tables, inline tables, datetime types
 
 See `IMPLEMENTATION_GUIDE.md` for detailed instructions on implementing each format.
 
