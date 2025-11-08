@@ -1,10 +1,13 @@
 // Utility functions for working with AST nodes
 
-import type { DataNode } from './types.js';
+import type { DataNode, ASTNode } from './types.js';
 
 /**
  * Convert AST to native JavaScript value.
  * Loses all position/location information.
+ *
+ * Accepts either a DataNode or a DocumentNode. If a DocumentNode is provided,
+ * converts its root node.
  *
  * @example
  * ```ts
@@ -16,7 +19,13 @@ import type { DataNode } from './types.js';
  * // { name: 'Alice' }
  * ```
  */
-export function toNative(node: DataNode): unknown {
+export function toNative(node: ASTNode): unknown {
+  // Handle Document nodes by converting their body
+  if (node.type === 'Document') {
+    return toNative(node.body);
+  }
+
+  // Handle DataNode types
   switch (node.type) {
     case 'String':
     case 'Number':

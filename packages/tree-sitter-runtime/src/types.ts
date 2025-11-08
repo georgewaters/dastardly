@@ -46,6 +46,11 @@ export interface SyntaxNode {
   readonly childCount: number;
 
   /**
+   * Parent node (null for root node).
+   */
+  readonly parent: SyntaxNode | null;
+
+  /**
    * Get a child node by field name (e.g., "key", "value").
    */
   childForFieldName(fieldName: string): SyntaxNode | null;

@@ -1,0 +1,3 @@
+positive_infinity: .inf
+negative_infinity: -.inf
+not_a_number: .nan

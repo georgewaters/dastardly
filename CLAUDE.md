@@ -148,6 +148,18 @@ pnpm --filter @dastardly/json test
 - [x] Comprehensive tests (utils, parser, serializer) - 245 tests total
 - [x] Document YAML-specific behavior (anchor resolution, complex keys, multi-document)
 
+### Phase 1c: Integration Testing (COMPLETED)
+- [x] Create `@dastardly/integration-tests` package
+- [x] Set up fixture directory structure (json/, yaml/, expected/)
+- [x] Implement fixture loading helpers
+- [x] Create cross-format conversion tests (JSON ↔ YAML)
+- [x] Create position tracking tests (source location accuracy)
+- [x] Create roundtrip tests (parse-serialize-parse fidelity)
+- [x] Add real-world fixture examples (package.json, docker-compose.yml, etc.)
+- [x] Add edge case tests (large numbers, unicode, deeply nested)
+- [x] Document integration testing patterns (CONTRIBUTING.md, ARCHITECTURE.md)
+- [x] Update all documentation files
+
 ### Phase 2: Additional Formats
 - [ ] XML support (attributes, namespaces)
 - [ ] CSV support (tabular data mapping)

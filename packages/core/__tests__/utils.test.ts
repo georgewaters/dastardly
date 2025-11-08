@@ -9,6 +9,7 @@ import {
   propertyNode,
   objectNode,
   arrayNode,
+  documentNode,
   toNative,
 } from '../src/index.js';
 
@@ -126,5 +127,71 @@ describe('toNative', () => {
     // Should just be a string, no loc property
     expect(native).toBe('test');
     expect(typeof native).toBe('string');
+  });
+
+  describe('DocumentNode support', () => {
+    it('converts DocumentNode with string body', () => {
+      const body = stringNode('hello', loc);
+      const doc = documentNode(body, loc);
+
+      expect(toNative(doc)).toBe('hello');
+    });
+
+    it('converts DocumentNode with number body', () => {
+      const body = numberNode(42, loc);
+      const doc = documentNode(body, loc);
+
+      expect(toNative(doc)).toBe(42);
+    });
+
+    it('converts DocumentNode with object body', () => {
+      const body = objectNode(
+        [
+          propertyNode(stringNode('name', loc), stringNode('Alice', loc), loc),
+          propertyNode(stringNode('age', loc), numberNode(30, loc), loc),
+        ],
+        loc
+      );
+      const doc = documentNode(body, loc);
+
+      expect(toNative(doc)).toEqual({ name: 'Alice', age: 30 });
+    });
+
+    it('converts DocumentNode with array body', () => {
+      const body = arrayNode(
+        [numberNode(1, loc), numberNode(2, loc), numberNode(3, loc)],
+        loc
+      );
+      const doc = documentNode(body, loc);
+
+      expect(toNative(doc)).toEqual([1, 2, 3]);
+    });
+
+    it('converts DocumentNode with nested structure', () => {
+      const body = objectNode(
+        [
+          propertyNode(
+            stringNode('user', loc),
+            objectNode(
+              [
+                propertyNode(stringNode('name', loc), stringNode('Bob', loc), loc),
+                propertyNode(stringNode('active', loc), booleanNode(true, loc), loc),
+              ],
+              loc
+            ),
+            loc
+          ),
+        ],
+        loc
+      );
+      const doc = documentNode(body, loc);
+
+      expect(toNative(doc)).toEqual({
+        user: {
+          name: 'Bob',
+          active: true,
+        },
+      });
+    });
   });
 });

@@ -1,0 +1,23 @@
+{
+  "status": "success",
+  "data": {
+    "users": [
+      {
+        "id": 1,
+        "username": "alice",
+        "email": "alice@example.com",
+        "roles": ["user", "admin"]
+      },
+      {
+        "id": 2,
+        "username": "bob",
+        "email": "bob@example.com",
+        "roles": ["user"]
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "pageSize": 10
+  },
+  "timestamp": "2024-01-15T10:30:00Z"
+}

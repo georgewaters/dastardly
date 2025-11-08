@@ -247,6 +247,13 @@ Use standard semver ranges for external dependencies:
 
 ## Testing Guidelines
 
+### Test Categories
+
+dASTardly uses two levels of testing:
+
+1. **Unit Tests**: Test individual functions, parsers, and serializers in isolation (located in each package)
+2. **Integration Tests**: Test cross-package interactions, format conversions, and real-world scenarios (located in `packages/integration-tests`)
+
 ### What to Test
 
 1. **Position Tracking**: Verify line/column/offset accuracy for every node
@@ -279,6 +286,64 @@ describe('JSON Parser', () => {
   });
 });
 ```
+
+### Integration Testing
+
+The `packages/integration-tests` package contains comprehensive tests for cross-format functionality.
+
+#### Running Integration Tests
+
+```bash
+# Run integration tests
+pnpm --filter @dastardly/integration-tests test
+
+# Run all tests (including integration tests)
+pnpm -r test
+```
+
+#### Adding Test Fixtures
+
+When adding integration tests:
+
+1. **Add fixture file** to appropriate `fixtures/` subdirectory:
+   - `fixtures/json/` for JSON test data
+   - `fixtures/yaml/` for YAML test data
+   - `fixtures/expected/` for expected outputs
+
+2. **Create corresponding test** in `__tests__/`:
+   - `cross-format.test.ts` - Cross-format conversions
+   - `position-tracking.test.ts` - Source location accuracy
+   - `roundtrip.test.ts` - Parse-serialize-parse fidelity
+
+3. **Use fixture helpers** from `__tests__/helpers/fixtures.ts`:
+
+```typescript
+import { loadJSONFixture, loadYAMLFixture } from './helpers/fixtures.js';
+
+it('converts package.json to YAML', () => {
+  const jsonSource = loadJSONFixture('real-world/package');
+  // ... test implementation
+});
+```
+
+#### Integration Test Categories
+
+- **Cross-format**: JSON ↔ YAML conversions and data preservation
+- **Position tracking**: Source location accuracy across formats
+- **Roundtrip**: Parse-serialize-parse fidelity tests
+- **Real-world**: Actual configuration files (package.json, docker-compose.yml, etc.)
+- **Edge cases**: Boundary conditions and special values
+
+#### When to Add Integration Tests
+
+Add integration tests when:
+
+1. **Creating a new format package**: Add cross-format conversion tests with existing formats
+2. **Modifying core AST**: Verify changes don't break cross-format conversions
+3. **Adding format-specific features**: Test how features are handled in conversions
+4. **Finding conversion bugs**: Add regression tests to prevent recurrence
+
+Integration tests validate the core value proposition of dASTardly: seamless format conversion while preserving data integrity and source locations.
 
 ## Performance Considerations
 

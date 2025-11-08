@@ -338,7 +338,7 @@ export class YAMLParser extends TreeSitterParser {
     // 2. An array of mappings
 
     if (valueNode.type === 'Object') {
-      return (valueNode as ObjectNode).properties;
+      return [...(valueNode as ObjectNode).properties];
     }
 
     if (valueNode.type === 'Array') {

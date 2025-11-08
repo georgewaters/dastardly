@@ -552,6 +552,54 @@ packages/format-name/
 - **Integration**: Roundtrip tests, real-world samples
 - **Target**: 115+ tests per package (JSON has 115)
 
+### Integration Testing Strategy
+
+The `packages/integration-tests` package validates cross-format functionality and real-world usage scenarios.
+
+#### Purpose
+- **Cross-format validation**: Verify seamless conversion between formats (JSON ↔ YAML, etc.)
+- **Data integrity**: Ensure structural equivalence is preserved across conversions
+- **Position tracking**: Validate source locations remain accurate through format changes
+- **Real-world testing**: Test with actual configuration files from popular tools
+- **Regression prevention**: Catch breaking changes in cross-package interactions
+
+#### Package Structure
+```
+packages/integration-tests/
+├── fixtures/
+│   ├── json/          # JSON test data (primitives, collections, real-world, edge-cases)
+│   ├── yaml/          # YAML test data (scalars, collections, real-world, yaml-specific)
+│   └── expected/      # Expected conversion outputs
+├── __tests__/
+│   ├── cross-format.test.ts       # JSON ↔ YAML conversion tests
+│   ├── position-tracking.test.ts  # Source location accuracy
+│   ├── roundtrip.test.ts          # Parse-serialize-parse fidelity
+│   └── helpers/
+│       ├── fixtures.ts            # Fixture loading utilities
+│       └── assertions.ts          # Custom AST assertions
+```
+
+#### Test Coverage Goals
+- **Cross-format conversions**: 100% coverage of format pairs (JSON ↔ YAML, JSON ↔ XML, etc.)
+- **Position tracking**: All node types validated for accurate source locations
+- **Roundtrip fidelity**: Every format tested for parse → serialize → parse stability
+- **Real-world fixtures**: Minimum 3-5 real configuration files per format
+- **Edge cases**: Special values (Infinity, NaN, -0), unicode, deeply nested structures
+
+#### When to Update Integration Tests
+1. **New format added**: Add cross-format tests with all existing formats
+2. **Core AST modified**: Verify changes don't break format conversions
+3. **Format-specific features**: Test how features map across formats (YAML anchors, XML attributes)
+4. **Bug fixes**: Add regression tests for conversion issues
+
+#### Benefits
+- **Early detection**: Catch breaking changes before they reach users
+- **Documentation**: Fixtures serve as usage examples
+- **Confidence**: High assurance that cross-format conversions work correctly
+- **Extensibility**: Easy to add new format pairs as packages are added
+
+The integration test suite runs automatically with `pnpm -r test` to ensure comprehensive validation on every change.
+
 ### Documentation Standards
 - **README.md Required**: Every package must have a comprehensive README.md
 - **Completeness**: README should document all public APIs, usage patterns, and format-specific behavior
