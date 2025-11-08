@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse as parseJSON, stringify as stringifyJSON } from '@dastardly/json';
+import { parse as parseJSON, serialize as serializeJSON } from '@dastardly/json';
 import { parse as parseYAML, serialize as serializeYAML } from '@dastardly/yaml';
 import { toNative } from '@dastardly/core';
 import { assertRoundtripEqual } from './helpers/assertions.js';
@@ -10,7 +10,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips string primitives', () => {
       const source = loadJSONFixture('primitives/string');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -20,7 +20,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips number primitives', () => {
       const source = loadJSONFixture('primitives/number');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -30,7 +30,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips boolean primitives', () => {
       const source = loadJSONFixture('primitives/boolean');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -40,7 +40,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips null', () => {
       const source = loadJSONFixture('primitives/null');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -50,7 +50,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips empty strings', () => {
       const source = loadJSONFixture('primitives/empty-string');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -60,7 +60,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips unicode strings', () => {
       const source = loadJSONFixture('primitives/unicode');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -70,7 +70,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips simple objects', () => {
       const source = loadJSONFixture('collections/simple-object');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -80,7 +80,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips simple arrays', () => {
       const source = loadJSONFixture('collections/simple-array');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -90,7 +90,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips nested objects', () => {
       const source = loadJSONFixture('collections/nested-object');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -100,7 +100,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips nested arrays', () => {
       const source = loadJSONFixture('collections/nested-array');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -110,7 +110,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips mixed arrays', () => {
       const source = loadJSONFixture('collections/mixed-array');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -120,7 +120,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips empty objects', () => {
       const source = loadJSONFixture('collections/empty-object');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -130,7 +130,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips empty arrays', () => {
       const source = loadJSONFixture('collections/empty-array');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -140,7 +140,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips real-world package.json', () => {
       const source = loadJSONFixture('real-world/package');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -151,7 +151,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips real-world tsconfig.json', () => {
       const source = loadJSONFixture('real-world/tsconfig');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -161,7 +161,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips real-world API response', () => {
       const source = loadJSONFixture('real-world/api-response');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -171,7 +171,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips large numbers', () => {
       const source = loadJSONFixture('edge-cases/large-number');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -181,7 +181,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips scientific notation', () => {
       const source = loadJSONFixture('edge-cases/scientific-notation');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -191,7 +191,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips deeply nested structures', () => {
       const source = loadJSONFixture('edge-cases/deeply-nested');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -201,7 +201,7 @@ describe('Roundtrip tests', () => {
     it('roundtrips objects with many properties', () => {
       const source = loadJSONFixture('edge-cases/many-properties');
       const ast1 = parseJSON(source);
-      const output = stringifyJSON(ast1);
+      const output = serializeJSON(ast1);
       const ast2 = parseJSON(output);
 
       assertRoundtripEqual(ast1, ast2);
@@ -214,7 +214,7 @@ describe('Roundtrip tests', () => {
     it('compact mode produces single-line output', () => {
       const source = loadJSONFixture('collections/simple-object');
       const ast = parseJSON(source);
-      const output = stringifyJSON(ast, { indent: 0 });
+      const output = serializeJSON(ast, { indent: 0 });
 
       expect(output).not.toContain('\n');
       expect(output).toMatch(/^\{.*\}$/);
@@ -223,7 +223,7 @@ describe('Roundtrip tests', () => {
     it('pretty-print mode produces formatted output', () => {
       const source = loadJSONFixture('collections/simple-object');
       const ast = parseJSON(source);
-      const output = stringifyJSON(ast, { indent: 2 });
+      const output = serializeJSON(ast, { indent: 2 });
 
       expect(output).toContain('\n');
       expect(output).toContain('  '); // 2-space indent
@@ -232,7 +232,7 @@ describe('Roundtrip tests', () => {
     it('custom indent works correctly', () => {
       const source = loadJSONFixture('collections/simple-object');
       const ast = parseJSON(source);
-      const output = stringifyJSON(ast, { indent: 4 });
+      const output = serializeJSON(ast, { indent: 4 });
 
       expect(output).toContain('    '); // 4-space indent
     });
@@ -240,7 +240,7 @@ describe('Roundtrip tests', () => {
     it('preserveRaw option maintains original formatting', () => {
       const source = '{\n  "name": "Alice"\n}';
       const ast = parseJSON(source);
-      const output = stringifyJSON(ast, { preserveRaw: true });
+      const output = serializeJSON(ast, { preserveRaw: true });
 
       // preserveRaw should use raw values when available
       const ast2 = parseJSON(output);
@@ -473,7 +473,7 @@ describe('Roundtrip tests', () => {
       const json1 = parseJSON(jsonSource);
       const yaml1 = serializeYAML(json1);
       const yamlAst = parseYAML(yaml1);
-      const json2 = stringifyJSON(yamlAst);
+      const json2 = serializeJSON(yamlAst);
       const jsonAst = parseJSON(json2);
       const yaml2 = serializeYAML(jsonAst);
 
@@ -484,11 +484,11 @@ describe('Roundtrip tests', () => {
     it('YAML → JSON → YAML → JSON is stable', () => {
       const yamlSource = loadYAMLFixture('collections/block-mapping');
       const yaml1 = parseYAML(yamlSource);
-      const json1 = stringifyJSON(yaml1);
+      const json1 = serializeJSON(yaml1);
       const jsonAst = parseJSON(json1);
       const yaml2 = serializeYAML(jsonAst);
       const yamlAst = parseYAML(yaml2);
-      const json2 = stringifyJSON(yamlAst);
+      const json2 = serializeJSON(yamlAst);
 
       // Second JSON output should match first JSON output
       expect(json1).toBe(json2);
@@ -501,7 +501,7 @@ describe('Roundtrip tests', () => {
 
       // Do 5 roundtrips
       for (let i = 0; i < 5; i++) {
-        const json = stringifyJSON(ast);
+        const json = serializeJSON(ast);
         ast = parseJSON(json);
       }
 

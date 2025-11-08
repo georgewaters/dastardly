@@ -1,20 +1,26 @@
 // JSON serializer implementation
 
-import type { DocumentNode, DataNode } from '@dastardly/core';
+import type { DocumentNode, DataNode, BaseSerializeOptions } from '@dastardly/core';
 import { escapeString, normalizeIndent } from './utils.js';
 
 /**
- * Options for JSON serialization.
+ * JSON-specific serialization options.
  */
-export interface SerializeOptions {
+export interface JSONSerializeOptions extends BaseSerializeOptions {
   /**
-   * Indentation: number of spaces, string (e.g., '\t'), or undefined/0 for compact.
+   * Indentation for pretty printing.
+   * - undefined or 0: compact output (no whitespace)
+   * - number: that many spaces per indentation level
+   * - string: use this string for each indentation level (e.g., '\t' for tabs)
+   *
    * Default: undefined (compact)
    */
   indent?: number | string;
 
   /**
-   * Use raw values from nodes when available (preserves original formatting).
+   * Use raw values from nodes when available.
+   * Preserves original number and string formatting from the source.
+   *
    * Default: false
    */
   preserveRaw?: boolean;
@@ -25,7 +31,7 @@ export interface SerializeOptions {
  */
 export function serialize(
   node: DocumentNode | DataNode,
-  options: SerializeOptions = {}
+  options: JSONSerializeOptions = {}
 ): string {
   const indent = normalizeIndent(options.indent);
   const preserveRaw = options.preserveRaw ?? false;

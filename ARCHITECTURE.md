@@ -526,6 +526,8 @@ packages/format-name/
 
 ### Implementation Pattern
 
+All format packages must implement the `FormatPackage` interface from `@dastardly/core`.
+
 **Parser Class**:
 - Extends `TreeSitterParser` from `@dastardly/tree-sitter-runtime`
 - Implements `convertDocument(node, source): DocumentNode`
@@ -534,16 +536,50 @@ packages/format-name/
 - Stores raw values for formatting preservation
 
 **Serializer Function**:
-- Exports `serialize(node, options)` function
-- Supports compact and pretty-print modes
-- Optional `preserveRaw` to maintain original formatting
+- Exports `serialize(node, options)` function with format-specific options
+- Format options extend `BaseSerializeOptions` (minimal/universal only)
+- Supports format-appropriate output (indent for JSON/YAML, delimiter for CSV, etc.)
 - Handles format-specific escaping/encoding
 
-**Public API**:
-- `parse(source): DocumentNode` - Convenience parser
-- `parseValue(source): DataNode` - Returns just body
-- `stringify(node, indent?): string` - Convenience serializer
-- Exports main classes and utilities
+**Public API** (Required by `FormatPackage` interface):
+```typescript
+export const formatName: FormatPackage<FormatSerializeOptions> = {
+  parse(source: string): DocumentNode;
+  parseValue(source: string): DataNode;
+  serialize(node: DocumentNode | DataNode, options?: FormatSerializeOptions): string;
+};
+
+// Convenience exports for destructuring
+export const { parse, parseValue, serialize } = formatName;
+```
+
+**Serialization Options**:
+Each format defines its own options extending `BaseSerializeOptions`:
+```typescript
+export interface FormatSerializeOptions extends BaseSerializeOptions {
+  // Format-specific options only
+  // e.g., indent for JSON/YAML, delimiter for CSV
+}
+```
+
+**Do not add options to `BaseSerializeOptions` unless they apply to ALL formats.**
+
+**Type Safety**:
+- TypeScript enforces the interface at compile time
+- Missing methods or incorrect signatures cause build errors
+- Strong guarantee of API consistency across all formats
+
+**Example Usage**:
+```typescript
+import { json } from '@dastardly/json';
+import { yaml } from '@dastardly/yaml';
+
+// Parse JSON
+const jsonAst = json.parse('{"name": "Alice"}');
+
+// Convert to YAML
+const yamlOutput = yaml.serialize(jsonAst, { indent: 2 });
+```
 
 ### Testing Standards
 - **Utils**: 100% coverage (critical for correctness)

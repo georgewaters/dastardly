@@ -52,3 +52,6 @@ export { visit, traverse, findAll, findFirst, getChildren } from './traverse.js'
 
 // Export utilities
 export { toNative } from './utils.js';
+
+// Export format package interface
+export type { FormatPackage, BaseSerializeOptions } from './format-interface.js';

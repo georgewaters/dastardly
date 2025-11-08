@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, parseValue, stringify, JSONParser, serialize } from '../src/index.js';
+import { parse, parseValue, JSONParser, serialize } from '../src/index.js';
 import { NodeTreeSitterRuntime } from '@dastardly/tree-sitter-runtime';
 import JSON_LANGUAGE from 'tree-sitter-json';
 
@@ -20,20 +20,6 @@ describe('Public API', () => {
     it('parses JSON and returns DataNode', () => {
       const value = parseValue('{"a": 1}');
       expect(value.type).toBe('Object');
-    });
-  });
-
-  describe('stringify()', () => {
-    it('serializes AST to compact JSON', () => {
-      const doc = parse('{"a": 1, "b": 2}');
-      const json = stringify(doc);
-      expect(json).toBe('{"a":1,"b":2}');
-    });
-
-    it('serializes AST to pretty JSON', () => {
-      const doc = parse('{"a": 1}');
-      const json = stringify(doc, { indent: 2 });
-      expect(json).toBe('{\n  "a": 1\n}');
     });
   });
 
@@ -65,10 +51,10 @@ describe('Public API', () => {
   });
 
   describe('Roundtrip', () => {
-    it('parse → stringify → parse produces equivalent AST', () => {
+    it('parse → serialize → parse produces equivalent AST', () => {
       const original = '{"name":"Alice","age":30,"active":true}';
       const doc1 = parse(original);
-      const json = stringify(doc1);
+      const json = serialize(doc1);
       const doc2 = parse(json);
 
       // Should have same structure (not testing deep equality, just types)
@@ -79,7 +65,7 @@ describe('Public API', () => {
     it('handles nested structures', () => {
       const original = '{"users":[{"name":"Alice"},{"name":"Bob"}]}';
       const doc1 = parse(original);
-      const json = stringify(doc1);
+      const json = serialize(doc1);
       const doc2 = parse(json);
 
       expect(doc2.body.type).toBe('Object');

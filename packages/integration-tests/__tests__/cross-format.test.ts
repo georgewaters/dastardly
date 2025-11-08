@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse as parseJSON, stringify as stringifyJSON } from '@dastardly/json';
+import { parse as parseJSON, serialize as serializeJSON } from '@dastardly/json';
 import { parse as parseYAML, serialize as serializeYAML } from '@dastardly/yaml';
 import { toNative } from '@dastardly/core';
 import { loadJSONFixture, loadYAMLFixture } from './helpers/fixtures.js';
@@ -11,7 +11,7 @@ describe('Cross-format conversions: JSON ↔ YAML', () => {
       const jsonAst = parseJSON(jsonSource);
       const yamlOutput = serializeYAML(jsonAst);
       const yamlAst = parseYAML(yamlOutput);
-      const jsonOutput = stringifyJSON(yamlAst);
+      const jsonOutput = serializeJSON(yamlAst);
 
       expect(toNative(jsonAst)).toEqual(toNative(yamlAst));
       expect(jsonOutput).toBe('"hello world"');
@@ -159,7 +159,7 @@ describe('Cross-format conversions: JSON ↔ YAML', () => {
     it('converts block mappings', () => {
       const yamlSource = loadYAMLFixture('collections/block-mapping');
       const yamlAst = parseYAML(yamlSource);
-      const jsonOutput = stringifyJSON(yamlAst);
+      const jsonOutput = serializeJSON(yamlAst);
       const jsonAst = parseJSON(jsonOutput);
 
       const expected = { name: 'Alice', age: 30, active: true };
@@ -170,7 +170,7 @@ describe('Cross-format conversions: JSON ↔ YAML', () => {
     it('converts block sequences', () => {
       const yamlSource = loadYAMLFixture('collections/block-sequence');
       const yamlAst = parseYAML(yamlSource);
-      const jsonOutput = stringifyJSON(yamlAst);
+      const jsonOutput = serializeJSON(yamlAst);
       const jsonAst = parseJSON(jsonOutput);
 
       const expected = ['apple', 'banana', 'cherry'];
@@ -181,7 +181,7 @@ describe('Cross-format conversions: JSON ↔ YAML', () => {
     it('converts flow mappings', () => {
       const yamlSource = loadYAMLFixture('collections/flow-mapping');
       const yamlAst = parseYAML(yamlSource);
-      const jsonOutput = stringifyJSON(yamlAst);
+      const jsonOutput = serializeJSON(yamlAst);
       const jsonAst = parseJSON(jsonOutput);
 
       const expected = { name: 'Alice', age: 30 };
@@ -192,7 +192,7 @@ describe('Cross-format conversions: JSON ↔ YAML', () => {
     it('converts flow sequences', () => {
       const yamlSource = loadYAMLFixture('collections/flow-sequence');
       const yamlAst = parseYAML(yamlSource);
-      const jsonOutput = stringifyJSON(yamlAst);
+      const jsonOutput = serializeJSON(yamlAst);
       const jsonAst = parseJSON(jsonOutput);
 
       const expected = [1, 2, 3, 4, 5];
@@ -203,7 +203,7 @@ describe('Cross-format conversions: JSON ↔ YAML', () => {
     it('converts nested YAML structures', () => {
       const yamlSource = loadYAMLFixture('collections/nested');
       const yamlAst = parseYAML(yamlSource);
-      const jsonOutput = stringifyJSON(yamlAst);
+      const jsonOutput = serializeJSON(yamlAst);
       const jsonAst = parseJSON(jsonOutput);
 
       const expected = {
@@ -226,7 +226,7 @@ describe('Cross-format conversions: JSON ↔ YAML', () => {
       const jsonAst = parseJSON(jsonSource);
       const yamlOutput = serializeYAML(jsonAst);
       const yamlAst = parseYAML(yamlOutput);
-      const jsonOutput = stringifyJSON(yamlAst);
+      const jsonOutput = serializeJSON(yamlAst);
       const finalAst = parseJSON(jsonOutput);
 
       expect(toNative(jsonAst)).toEqual(toNative(finalAst));
@@ -258,7 +258,7 @@ describe('Cross-format conversions: JSON ↔ YAML', () => {
     it('converts docker-compose.yaml to JSON and back', () => {
       const yamlSource = loadYAMLFixture('real-world/docker-compose');
       const yamlAst = parseYAML(yamlSource);
-      const jsonOutput = stringifyJSON(yamlAst);
+      const jsonOutput = serializeJSON(yamlAst);
       const jsonAst = parseJSON(jsonOutput);
       const yamlOutput = serializeYAML(jsonAst);
       const finalAst = parseYAML(yamlOutput);
@@ -271,7 +271,7 @@ describe('Cross-format conversions: JSON ↔ YAML', () => {
     it('converts GitHub Actions workflow to JSON and back', () => {
       const yamlSource = loadYAMLFixture('real-world/github-actions');
       const yamlAst = parseYAML(yamlSource);
-      const jsonOutput = stringifyJSON(yamlAst);
+      const jsonOutput = serializeJSON(yamlAst);
       const jsonAst = parseJSON(jsonOutput);
 
       expect(toNative(yamlAst)).toEqual(toNative(jsonAst));
@@ -327,7 +327,7 @@ describe('Cross-format conversions: JSON ↔ YAML', () => {
     it('resolves anchors and aliases in conversion', () => {
       const yamlSource = loadYAMLFixture('yaml-specific/anchors-aliases');
       const yamlAst = parseYAML(yamlSource);
-      const jsonOutput = stringifyJSON(yamlAst);
+      const jsonOutput = serializeJSON(yamlAst);
       const jsonAst = parseJSON(jsonOutput);
 
       // Anchors should be resolved to their values
@@ -339,7 +339,7 @@ describe('Cross-format conversions: JSON ↔ YAML', () => {
     it('resolves merge keys in conversion', () => {
       const yamlSource = loadYAMLFixture('yaml-specific/merge-keys');
       const yamlAst = parseYAML(yamlSource);
-      const jsonOutput = stringifyJSON(yamlAst);
+      const jsonOutput = serializeJSON(yamlAst);
       const jsonAst = parseJSON(jsonOutput);
 
       expect(toNative(yamlAst)).toEqual(toNative(jsonAst));
@@ -362,7 +362,7 @@ describe('Cross-format conversions: JSON ↔ YAML', () => {
     it('handles multiline strings in conversion', () => {
       const yamlSource = loadYAMLFixture('scalars/multiline-string');
       const yamlAst = parseYAML(yamlSource);
-      const jsonOutput = stringifyJSON(yamlAst);
+      const jsonOutput = serializeJSON(yamlAst);
       const jsonAst = parseJSON(jsonOutput);
 
       expect(toNative(yamlAst)).toEqual(toNative(jsonAst));

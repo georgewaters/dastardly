@@ -10,6 +10,7 @@ import type {
   NumberNode,
   BooleanNode,
   NullNode,
+  BaseSerializeOptions,
 } from '@dastardly/core';
 import {
   escapeDoubleQuoteString,
@@ -18,14 +19,16 @@ import {
 } from './utils.js';
 
 /**
- * Options for YAML serialization.
+ * YAML-specific serialization options.
  */
-export interface SerializeOptions {
+export interface YAMLSerializeOptions extends BaseSerializeOptions {
   /**
-   * Indentation for pretty printing.
-   * - undefined or 0: compact inline style (flow syntax)
+   * Indentation for block collections.
+   * - undefined or 2: two spaces (YAML standard)
    * - number: that many spaces per indentation level (block syntax)
-   * - string: use this string for each indentation level (block syntax)
+   * - string: use this string for each indentation level (e.g., '\t' for tabs)
+   *
+   * Default: 2 spaces
    */
   indent?: number | string;
 }
@@ -34,12 +37,12 @@ export interface SerializeOptions {
  * Serialize a dASTardly AST node to YAML string.
  *
  * @param node - DocumentNode or DataNode to serialize
- * @param options - Serialization options
+ * @param options - YAML serialization options
  * @returns YAML string
  */
 export function serialize(
   node: DocumentNode | DataNode,
-  options: SerializeOptions = {}
+  options: YAMLSerializeOptions = {}
 ): string {
   const indent = normalizeIndent(options.indent);
 

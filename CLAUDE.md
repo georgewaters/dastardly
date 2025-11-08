@@ -161,8 +161,23 @@ pnpm --filter @dastardly/json test
 - [x] Update all documentation files
 
 ### Phase 2: Additional Formats
+
+When implementing a new format package:
+
+1. **Create package structure** following JSON/YAML examples
+2. **Implement `FormatPackage<TOptions>` interface**:
+   - Export object implementing all required methods (`parse`, `parseValue`, `serialize`)
+   - Define format-specific `FormatSerializeOptions` extending `BaseSerializeOptions`
+   - Export destructured convenience functions
+3. **Extend `TreeSitterParser`** for parser implementation
+4. **Add comprehensive tests** matching existing packages (95%+ coverage)
+5. **Update documentation** with format-specific behavior
+
+The TypeScript compiler enforces the `FormatPackage` interface contract.
+
+**Upcoming formats**:
 - [ ] XML support (attributes, namespaces)
-- [ ] CSV support (tabular data mapping)
+- [ ] CSV support (tabular data mapping - note: no indent option!)
 - [ ] TOML support
 
 ### Phase 3: Validation
