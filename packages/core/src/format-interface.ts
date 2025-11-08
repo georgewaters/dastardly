@@ -3,6 +3,19 @@
 import type { DocumentNode, DataNode } from './types.js';
 
 /**
+ * Base parse options shared by all formats.
+ *
+ * Currently minimal - only truly universal options belong here
+ * (e.g., future: encoding detection, unicode normalization, error recovery modes).
+ *
+ * Format-specific options (type inference, delimiters, header handling, etc.) belong in
+ * format-specific extensions like CSVParseOptions.
+ */
+export interface BaseParseOptions {
+  // Intentionally minimal - most options are format-specific
+}
+
+/**
  * Base serialization options shared by all formats.
  *
  * Currently minimal - only truly universal options belong here
@@ -22,73 +35,88 @@ export interface BaseSerializeOptions {
  * Format packages export an object implementing this interface, ensuring
  * type safety and API consistency across all formats.
  *
- * @template TOptions - Format-specific serialization options extending BaseSerializeOptions
+ * @template TSerializeOptions - Format-specific serialization options extending BaseSerializeOptions
+ * @template TParseOptions - Format-specific parse options extending BaseParseOptions
  *
  * @example
  * ```typescript
- * // Implementing a format package
+ * // Implementing a format package with parse options
  * import type { FormatPackage } from '@dastardly/core';
  *
- * export interface JSONSerializeOptions extends BaseSerializeOptions {
- *   indent?: number | string;
- *   preserveRaw?: boolean;
+ * export interface CSVSerializeOptions extends BaseSerializeOptions {
+ *   delimiter?: string;
+ *   quoteStrategy?: 'needed' | 'all' | 'nonnumeric' | 'none';
  * }
  *
- * export const json: FormatPackage<JSONSerializeOptions> = {
- *   parse(source) {
- *     // Parse JSON to AST
+ * export interface CSVParseOptions extends BaseParseOptions {
+ *   inferTypes?: boolean;
+ *   headers?: boolean | string[];
+ *   delimiter?: string;
+ * }
+ *
+ * export const csv: FormatPackage<CSVSerializeOptions, CSVParseOptions> = {
+ *   parse(source, options) {
+ *     // Parse CSV to AST using options
  *   },
  *
- *   parseValue(source) {
- *     return this.parse(source).body;
+ *   parseValue(source, options) {
+ *     return this.parse(source, options).body;
  *   },
  *
  *   serialize(node, options) {
- *     // Serialize AST to JSON
+ *     // Serialize AST to CSV
  *   }
  * };
  * ```
  */
 export interface FormatPackage<
-  TOptions extends BaseSerializeOptions = BaseSerializeOptions
+  TSerializeOptions extends BaseSerializeOptions = BaseSerializeOptions,
+  TParseOptions extends BaseParseOptions = BaseParseOptions
 > {
   /**
    * Parse source text into a dASTardly DocumentNode.
    *
    * @param source - Source text in the format (JSON, YAML, XML, etc.)
+   * @param options - Format-specific parse options (optional)
    * @returns Parsed DocumentNode AST with full position information
    * @throws ParseError if source is invalid or malformed
    *
    * @example
    * ```typescript
-   * import { json } from '@dastardly/json';
+   * import { csv } from '@dastardly/csv';
    *
-   * const ast = json.parse('{"name": "Alice", "age": 30}');
-   * console.log(ast.type); // 'Document'
-   * console.log(ast.body.type); // 'Object'
+   * // Parse with default options
+   * const ast1 = csv.parse('name,age\nAlice,30');
+   *
+   * // Parse with type inference
+   * const ast2 = csv.parse('name,age\nAlice,30', { inferTypes: true });
+   * console.log(ast2.type); // 'Document'
+   * console.log(ast2.body.type); // 'Array'
    * ```
    */
-  parse(source: string): DocumentNode;
+  parse(source: string, options?: TParseOptions): DocumentNode;
 
   /**
    * Parse source and return just the body (DataNode).
    *
-   * Convenience method equivalent to `parse(source).body`.
+   * Convenience method equivalent to `parse(source, options).body`.
    * Useful when you only need the data structure without document wrapper.
    *
    * @param source - Source text in the format
+   * @param options - Format-specific parse options (optional)
    * @returns DataNode AST (document body without wrapper)
    * @throws ParseError if source is invalid or malformed
    *
    * @example
    * ```typescript
-   * import { yaml } from '@dastardly/yaml';
+   * import { csv } from '@dastardly/csv';
    *
-   * const data = yaml.parseValue('name: Alice\nage: 30');
-   * console.log(data.type); // 'Object' (not 'Document')
+   * // Parse without headers
+   * const data = csv.parseValue('Alice,30\nBob,25', { headers: false });
+   * console.log(data.type); // 'Array' (not 'Document')
    * ```
    */
-  parseValue(source: string): DataNode;
+  parseValue(source: string, options?: TParseOptions): DataNode;
 
   /**
    * Serialize a dASTardly AST node to format-specific text.
@@ -121,5 +149,5 @@ export interface FormatPackage<
    * // }
    * ```
    */
-  serialize(node: DocumentNode | DataNode, options?: TOptions): string;
+  serialize(node: DocumentNode | DataNode, options?: TSerializeOptions): string;
 }

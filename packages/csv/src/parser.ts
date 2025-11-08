@@ -2,6 +2,7 @@ import {
   type DocumentNode,
   type DataNode,
   type SourceLocation,
+  type BaseParseOptions,
   documentNode,
   arrayNode,
   objectNode,
@@ -23,7 +24,7 @@ import { unescapeField } from './utils.js';
 import type { LanguageWrapper } from '@dastardly/tree-sitter-csv';
 import * as csvGrammars from '@dastardly/tree-sitter-csv';
 
-export interface CSVParseOptions {
+export interface CSVParseOptions extends BaseParseOptions {
   /**
    * Whether the first row contains headers.
    * - true: first row is headers, parse as array of objects

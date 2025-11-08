@@ -20,7 +20,7 @@ export {
   type QuoteStrategy,
 } from './utils.js';
 
-import { CSVParser } from './parser.js';
+import { CSVParser, type CSVParseOptions } from './parser.js';
 import { serialize as serializeNode, type CSVSerializeOptions } from './serializer.js';
 
 /**
@@ -44,30 +44,35 @@ import { serialize as serializeNode, type CSVSerializeOptions } from './serializ
  * // Bob	25
  * ```
  */
-export const csv: FormatPackage<CSVSerializeOptions> = {
+export const csv: FormatPackage<CSVSerializeOptions, CSVParseOptions> = {
   /**
    * Parse CSV string into a dASTardly DocumentNode.
    *
    * @param source - CSV string to parse
+   * @param options - CSV parse options (delimiter, headers, inferTypes)
    * @returns DocumentNode AST
    * @throws ParseError if source is invalid CSV
    */
-  parse(source: string): DocumentNode {
+  parse(source, options): DocumentNode {
     const runtime = new NodeTreeSitterRuntime();
-    const parser = new CSVParser(runtime, CSV_LANGUAGE.csv);
+    const delimiter = options?.delimiter ?? ',';
+    // Select grammar based on delimiter
+    const grammar = delimiter === '\t' ? CSV_LANGUAGE.tsv : delimiter === '|' ? CSV_LANGUAGE.psv : CSV_LANGUAGE.csv;
+    const parser = new CSVParser(runtime, grammar, options);
     return parser.parse(source);
   },
 
   /**
    * Parse CSV string and return just the body (DataNode).
-   * Convenience for parse(source).body
+   * Convenience for parse(source, options).body
    *
    * @param source - CSV string to parse
+   * @param options - CSV parse options (delimiter, headers, inferTypes)
    * @returns DataNode AST (Array of Objects or Array of Arrays)
    * @throws ParseError if source is invalid CSV
    */
-  parseValue(source: string): DataNode {
-    return this.parse(source).body;
+  parseValue(source, options): DataNode {
+    return this.parse(source, options).body;
   },
 
   /**

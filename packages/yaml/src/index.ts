@@ -51,10 +51,11 @@ export const yaml: FormatPackage<YAMLSerializeOptions> = {
    * Note: Only the first document is parsed in multi-document YAML files.
    *
    * @param source - YAML string to parse
+   * @param options - Parse options (not used for YAML)
    * @returns DocumentNode AST
    * @throws ParseError if source is invalid YAML
    */
-  parse(source: string): DocumentNode {
+  parse(source, options): DocumentNode {
     const runtime = new NodeTreeSitterRuntime();
     const parser = new YAMLParser(runtime, YAML_LANGUAGE);
     return parser.parse(source);
@@ -67,11 +68,12 @@ export const yaml: FormatPackage<YAMLSerializeOptions> = {
    * Note: Only the first document is parsed in multi-document YAML files.
    *
    * @param source - YAML string to parse
+   * @param options - Parse options (not used for YAML)
    * @returns DataNode AST
    * @throws ParseError if source is invalid YAML
    */
-  parseValue(source: string): DataNode {
-    return this.parse(source).body;
+  parseValue(source, options): DataNode {
+    return this.parse(source, options).body;
   },
 
   /**

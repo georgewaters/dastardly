@@ -39,10 +39,11 @@ export const json: FormatPackage<JSONSerializeOptions> = {
    * Parse JSON string into a dASTardly DocumentNode.
    *
    * @param source - JSON string to parse
+   * @param options - Parse options (not used for JSON)
    * @returns DocumentNode AST
    * @throws ParseError if source is invalid JSON
    */
-  parse(source: string): DocumentNode {
+  parse(source, options): DocumentNode {
     const runtime = new NodeTreeSitterRuntime();
     const parser = new JSONParser(runtime, JSON_LANGUAGE);
     return parser.parse(source);
@@ -53,11 +54,12 @@ export const json: FormatPackage<JSONSerializeOptions> = {
    * Convenience for parse(source).body
    *
    * @param source - JSON string to parse
+   * @param options - Parse options (not used for JSON)
    * @returns DataNode AST
    * @throws ParseError if source is invalid JSON
    */
-  parseValue(source: string): DataNode {
-    return this.parse(source).body;
+  parseValue(source, options): DataNode {
+    return this.parse(source, options).body;
   },
 
   /**
