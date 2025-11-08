@@ -673,16 +673,17 @@ The integration test suite runs automatically with `pnpm -r test` to ensure comp
   - Flow and block styles in serialization
 
 ### CSV Package
-- **Status**: ✅ Complete (Phase 1)
-- **Lines of Code**: ~700 production, ~1,100 tests
-- **Test Coverage**: 99 tests (97 passing, 2 skipped for documented grammar limitations)
-- **Implementation Time**: ~20-25 hours (includes tree-sitter-csv migration)
+- **Status**: ✅ Complete (Phase 2 - RFC 4180 Compliant)
+- **Lines of Code**: ~700 production, ~1,100 tests, ~200 external scanner (C)
+- **Test Coverage**: 99 tests (98 passing, 1 skipped for variable field counts)
+- **Implementation Time**: ~25-30 hours (includes migration + external scanner)
 - **Key Files**:
   - `packages/csv/src/parser.ts` - 220 lines
   - `packages/csv/src/serializer.ts` - 360 lines
   - `packages/csv/src/utils.ts` - 130 lines
   - `packages/csv/__tests__/` - 4 test files
-  - `packages/tree-sitter-csv/` - Forked and migrated to node-addon-api
+  - `packages/tree-sitter-csv/` - Forked, migrated to node-addon-api
+  - `packages/tree-sitter-csv/src/scanner.c` - External scanner for empty fields
 - **Special Features**:
   - Multiple delimiter support (CSV, TSV, PSV)
   - Header handling (auto-detect, custom, or none)
@@ -691,18 +692,26 @@ The integration test suite runs automatically with `pnpm -r test` to ensure comp
   - Line ending options (LF, CRLF)
   - Nested structure handling (error, json, flatten)
   - Produces array-of-objects or array-of-arrays
+  - **RFC 4180 empty field support via external scanner**
 - **Grammar Improvements**:
-  - ✅ Single-character text fields now supported (Phase 1)
-  - ✅ CRLF line endings now working (Phase 1)
-  - Grammar regex modified to allow zero-length text matching
+  - ✅ Single-character text fields supported (Phase 1 - regex fix)
+  - ✅ CRLF line endings working (Phase 1)
+  - ✅ Empty fields supported (Phase 2 - external scanner)
+  - Grammar uses single separators between fields
+  - Document grammar handles trailing newlines
   - Unified whitespace handling with `\s`
-- **Known Limitations** (require external scanner - Phase 2):
-  - Empty fields not supported (tree-sitter prohibits empty-string rules)
+- **External Scanner** (Phase 2):
+  - Stateless C scanner in `src/scanner.c`
+  - Detects zero-width empty field tokens
+  - Exports symbols for all three variants (csv/tsv/psv)
+  - Zero-width tokens via `mark_end()` before lookahead
+  - Prevents phantom rows at EOF
+- **Remaining Limitations**:
   - Variable field counts not supported (lower priority)
-  - See `packages/csv/LIMITATIONS.md` for technical details and research
+  - See `packages/csv/LIMITATIONS.md` for details
 - **Tree-sitter Tooling**:
   - Uses system tree-sitter CLI for grammar generation (development only)
-  - Commits generated `parser.c` files for consumers
+  - Commits generated `parser.c` and `scanner.c` files for consumers
   - Post-processes `node-types.json` for CLI 0.25+ → runtime 0.21.1 compatibility
 
 ### Remaining Packages

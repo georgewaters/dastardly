@@ -22,31 +22,27 @@ This change also unified whitespace handling using `\s` instead of listing indiv
 
 **Test Results**: All previously skipped tests now pass. Single-character headers like `a,b,c` and single-letter values are fully supported.
 
-## Empty Fields Not Supported
+## ~~Empty Fields Not Supported~~ ✅ FIXED
 
-**Issue**: The parser currently does not support empty fields (e.g., `a,b,c\n1,,3` where the second field is empty).
+**Status**: **RESOLVED** - Empty fields are now fully supported via external scanner.
 
-**Root Cause**: Tree-sitter fundamentally prohibits grammar rules that match the empty string, as this would cause infinite loops in the parser. The naive approach of making fields optional:
-```javascript
-field: $ => optional(choice($.text, $.number, $.float, $.boolean)),
-```
-produces the error: _"The rule `field` matches the empty string. Tree-sitter does not support syntactic rules that match the empty string unless they are used only as the grammar's start rule."_
+**Previous Issue**: The parser could not support empty fields (e.g., `a,b,c\n1,,3`) because tree-sitter fundamentally prohibits grammar rules that match empty strings.
 
-**Why Grammar-Only Solutions Don't Work**:
-1. **Empty string prohibition**: Tree-sitter explicitly prevents any rule from matching empty strings (see [tree-sitter#98](https://github.com/tree-sitter/tree-sitter/issues/98), [tree-sitter#1271](https://github.com/tree-sitter/tree-sitter/issues/1271))
-2. **No lookahead support**: The grammar DSL doesn't support lookahead assertions that could detect sequential separators (`,,`) without consuming input
-3. **Token-based lexing**: Removing the `token()` wrapper doesn't help, as the underlying issue is at the grammar rule level, not tokenization
+**Root Cause**: Tree-sitter's grammar DSL cannot express empty-string matches, as this would cause infinite loops in the parser. The naive approach of `optional(choice(...))` is explicitly rejected.
 
-**Required Solution**: Implement an **external scanner** in C that can detect empty fields by looking ahead for consecutive separators. This is the only way to handle empty strings in tree-sitter grammars.
+**Solution Implemented**: External scanner in C (`packages/tree-sitter-csv/src/scanner.c`) that detects empty fields by examining lookahead:
+- Consecutive separators (`,,`) - middle empty field
+- Separator before newline (`,\n`) - trailing empty field
+- Newline after separator from previous row - leading empty field
+- Zero-width tokens via `mark_end()` before advancing
 
-**Impact**:
-- CSV files with empty fields fail to parse with "syntax error"
-- This violates RFC 4180 CSV specification which allows empty fields
-- See skipped test: `__tests__/parser.test.ts` - "should handle empty fields"
+**Technical Details**:
+- External scanner exports functions for all three variants (CSV, TSV, PSV)
+- Stateless design (no state to serialize/deserialize)
+- Grammar updated to use single separators between fields instead of `repeat(separator)`
+- Document grammar handles trailing newlines correctly
 
-**Workaround**: Ensure all CSV files have content in every field (use explicit empty strings `""` if needed).
-
-**Next Steps**: Part 2 will implement an external scanner in `packages/tree-sitter-csv/src/scanner.c` to add proper empty field support and achieve full RFC 4180 compliance.
+**Test Results**: All tests passing (98/99, with 1 intentionally skipped for variable field counts)
 
 ## Variable Field Counts Not Supported
 
@@ -95,7 +91,7 @@ produces the error: _"The rule `field` matches the empty string. Tree-sitter doe
 | Quoted fields | ✅ | Supported |
 | Escaped quotes (`""`) | ✅ | Supported |
 | Embedded newlines in quotes | ❓ | Untested |
-| Empty fields | ❌ | **Not supported** - requires external scanner (Phase 2) |
+| Empty fields | ✅ | **Supported** - external scanner (Phase 2) |
 | Leading/trailing spaces | ✅ | Preserved in unquoted fields |
 
 ## For Developers
