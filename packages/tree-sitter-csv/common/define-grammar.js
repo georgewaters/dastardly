@@ -36,7 +36,7 @@ module.exports = function defineGrammar(dialect, separator) {
       field: $ => choice($.text, $.number, $.float, $.boolean),
 
       text: _ => token(choice(
-        new RegExp(`[^${separator}\\d\\s"][^${separator} \\n\\r"]+`),
+        new RegExp(`[^${separator}\\d\\s"][^${separator}\\s"]*`),
         seq('"', repeat(choice(/[^"]/, '""')), '"'),
       )),
       number: _ => choice(/\d+/, /0[xX][0-9a-fA-F]+/),

@@ -37,9 +37,7 @@ describe('Public API', () => {
       expect(csv).toBe('"text"\n"hello"');
     });
 
-    // LIMITATION: Grammar doesn't support single-character text fields
-    // See LIMITATIONS.md for details
-    it.skip('supports CRLF line endings', () => {
+    it('supports CRLF line endings', () => {
       const doc = parse('a\n1\n2');
       const csv = serialize(doc, { lineEnding: 'crlf' });
       expect(csv).toBe('a\r\n1\r\n2');
@@ -47,9 +45,7 @@ describe('Public API', () => {
   });
 
   describe('CSVParser', () => {
-    // LIMITATION: Grammar doesn't support single-character text fields
-    // See LIMITATIONS.md for details
-    it.skip('can be instantiated and reused', () => {
+    it('can be instantiated and reused', () => {
       const runtime = new NodeTreeSitterRuntime();
       const parser = new CSVParser(runtime, CSV_LANGUAGE.csv);
 

@@ -1,4 +1,5 @@
 {
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/grammar.schema.json",
   "name": "psv",
   "rules": {
     "document": {
@@ -116,7 +117,7 @@
         "members": [
           {
             "type": "PATTERN",
-            "value": "[^|\\d\\s\"][^| \\n\\r\"]+"
+            "value": "[^|\\d\\s\"][^|\\s\"]*"
           },
           {
             "type": "SEQ",
@@ -200,5 +201,6 @@
   "precedences": [],
   "externals": [],
   "inline": [],
-  "supertypes": []
+  "supertypes": [],
+  "reserved": {}
 }

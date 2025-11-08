@@ -38,14 +38,13 @@
   "devDependencies": {
     "eslint": "^8.47.0",
     "eslint-config-google": "^0.14.0",
-    "prebuildify": "^6.0.1",
-    "tree-sitter-cli": "^0.20.8"
+    "prebuildify": "^6.0.1"
   },
   "scripts": {
     "generate": "npm run build-csv && npm run build-psv && npm run build-tsv",
-    "build-csv": "cd csv && tree-sitter generate --no-bindings",
-    "build-psv": "cd psv && tree-sitter generate --no-bindings",
-    "build-tsv": "cd tsv && tree-sitter generate --no-bindings",
+    "build-csv": "cd csv && tree-sitter generate",
+    "build-psv": "cd psv && tree-sitter generate",
+    "build-tsv": "cd tsv && tree-sitter generate",
     "install": "node-gyp-build",
     "prebuildify": "prebuildify --napi --strip",
     "lint": "eslint common/define-grammar.js csv/grammar.js tsv/grammar.js",
