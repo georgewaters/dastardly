@@ -354,6 +354,43 @@ export class YAMLParser extends TreeSitterParser {
     return [];
   }
 
+  /**
+   * Convert a node to a string for use as an object key.
+   * Plain scalars are always treated as strings when used as keys,
+   * even if they look like booleans/numbers (e.g., 'y', 'n', '123').
+   */
+  private convertKey(node: SyntaxNode, source: string): StringNode {
+    const loc = nodeToLocation(node, this.sourceFormat);
+
+    // Handle wrapper nodes by extracting their content
+    if (node.type === 'flow_node' || node.type === 'block_node') {
+      for (const child of node.children) {
+        if (child.text.trim() !== '') {
+          return this.convertKey(child, source);
+        }
+      }
+    }
+
+    // For plain scalars used as keys, always treat as strings
+    if (node.type === 'plain_scalar') {
+      return stringNode(node.text, loc);
+    }
+
+    // For quoted strings, convert normally
+    if (node.type === 'double_quote_scalar') {
+      return this.convertDoubleQuoteScalar(node, source);
+    }
+
+    if (node.type === 'single_quote_scalar') {
+      return this.convertSingleQuoteScalar(node, source);
+    }
+
+    // For any other type, convert to value and coerce to string
+    const value = this.convertValue(node, source);
+    const keyValue = this.coerceToString(value);
+    return stringNode(keyValue, value.loc);
+  }
+
   private convertPair(node: SyntaxNode, source: string): PropertyNode {
     const loc = nodeToLocation(node, this.sourceFormat);
 
@@ -394,17 +431,8 @@ export class YAMLParser extends TreeSitterParser {
       );
     }
 
-    const key = this.convertValue(keyNode, source);
-
-    // Ensure key is a string
-    let keyString: StringNode;
-    if (key.type === 'String') {
-      keyString = key as StringNode;
-    } else {
-      // Coerce to string
-      const keyValue = this.coerceToString(key);
-      keyString = stringNode(keyValue, key.loc);
-    }
+    // Convert key using dedicated method that preserves plain scalars as strings
+    const keyString = this.convertKey(keyNode, source);
 
     const value = valueNode
       ? this.convertValue(valueNode, source)

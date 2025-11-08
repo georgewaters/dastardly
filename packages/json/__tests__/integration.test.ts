@@ -32,7 +32,7 @@ describe('Public API', () => {
 
     it('serializes AST to pretty JSON', () => {
       const doc = parse('{"a": 1}');
-      const json = stringify(doc, 2);
+      const json = stringify(doc, { indent: 2 });
       expect(json).toBe('{\n  "a": 1\n}');
     });
   });

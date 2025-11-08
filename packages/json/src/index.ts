@@ -12,7 +12,7 @@ export { serialize, type SerializeOptions } from './serializer.js';
 export { escapeString, unescapeString, normalizeIndent } from './utils.js';
 
 import { JSONParser } from './parser.js';
-import { serialize as serializeNode } from './serializer.js';
+import { serialize as serializeNode, type SerializeOptions } from './serializer.js';
 
 /**
  * Parse JSON string into a dASTardly DocumentNode.
@@ -42,18 +42,15 @@ export function parseValue(source: string): DataNode {
 
 /**
  * Serialize a dASTardly AST node to JSON string.
- * Convenience function with indent parameter.
+ * Convenience function that wraps the serialize function.
  *
  * @param node - DocumentNode or DataNode to serialize
- * @param indent - Indentation (number of spaces, string, or undefined for compact)
+ * @param options - Serialization options (indent, preserveRaw)
  * @returns JSON string
  */
 export function stringify(
   node: DocumentNode | DataNode,
-  indent?: number | string
+  options?: SerializeOptions
 ): string {
-  if (indent === undefined) {
-    return serializeNode(node, {});
-  }
-  return serializeNode(node, { indent });
+  return serializeNode(node, options ?? {});
 }
