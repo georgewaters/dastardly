@@ -848,4 +848,73 @@ spec:
       expect(() => parseValue(yaml)).toThrow(/complex.*key/i);
     });
   });
+
+  describe('bare scalar documents', () => {
+    it('parses bare number', () => {
+      const source = '42';
+      const ast = parse(source);
+      expect(ast.type).toBe('Document');
+      expect(ast.body.type).toBe('Number');
+      if (ast.body.type === 'Number') {
+        expect(ast.body.value).toBe(42);
+      }
+    });
+
+    it('parses bare string', () => {
+      const source = 'hello';
+      const ast = parse(source);
+      expect(ast.type).toBe('Document');
+      expect(ast.body.type).toBe('String');
+      if (ast.body.type === 'String') {
+        expect(ast.body.value).toBe('hello');
+      }
+    });
+
+    it('parses bare boolean true', () => {
+      const source = 'true';
+      const ast = parse(source);
+      expect(ast.type).toBe('Document');
+      expect(ast.body.type).toBe('Boolean');
+      if (ast.body.type === 'Boolean') {
+        expect(ast.body.value).toBe(true);
+      }
+    });
+
+    it('parses bare boolean false', () => {
+      const source = 'false';
+      const ast = parse(source);
+      expect(ast.type).toBe('Document');
+      expect(ast.body.type).toBe('Boolean');
+      if (ast.body.type === 'Boolean') {
+        expect(ast.body.value).toBe(false);
+      }
+    });
+
+    it('parses bare null', () => {
+      const source = 'null';
+      const ast = parse(source);
+      expect(ast.type).toBe('Document');
+      expect(ast.body.type).toBe('Null');
+    });
+
+    it('parses bare float', () => {
+      const source = '3.14';
+      const ast = parse(source);
+      expect(ast.type).toBe('Document');
+      expect(ast.body.type).toBe('Number');
+      if (ast.body.type === 'Number') {
+        expect(ast.body.value).toBe(3.14);
+      }
+    });
+
+    it('parses bare negative number', () => {
+      const source = '-456';
+      const ast = parse(source);
+      expect(ast.type).toBe('Document');
+      expect(ast.body.type).toBe('Number');
+      if (ast.body.type === 'Number') {
+        expect(ast.body.value).toBe(-456);
+      }
+    });
+  });
 });

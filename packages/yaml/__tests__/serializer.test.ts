@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { serialize } from '../src/serializer.js';
+import { parse } from '../src/index.js';
 import {
   documentNode,
   objectNode,
@@ -11,6 +12,7 @@ import {
   nullNode,
   sourceLocation,
   position,
+  toNative,
 } from '@dastardly/core';
 
 // Helper to create dummy location
@@ -482,6 +484,135 @@ describe('YAML serialize', () => {
       ], loc);
       const result = serialize(workflow, { indent: 2 });
       expect(result).toBe('name: CI\n"on":\n  - push\n  - pull_request');
+    });
+  });
+
+  describe('DocumentNode serialization', () => {
+    it('serializes DocumentNode with number body', () => {
+      const body = numberNode(42, loc);
+      const doc = documentNode(body, loc);
+      expect(serialize(doc)).toBe('42');
+    });
+
+    it('serializes DocumentNode with string body', () => {
+      const body = stringNode('hello', loc);
+      const doc = documentNode(body, loc);
+      expect(serialize(doc)).toBe('hello');
+    });
+
+    it('serializes DocumentNode with boolean true body', () => {
+      const body = booleanNode(true, loc);
+      const doc = documentNode(body, loc);
+      expect(serialize(doc)).toBe('true');
+    });
+
+    it('serializes DocumentNode with boolean false body', () => {
+      const body = booleanNode(false, loc);
+      const doc = documentNode(body, loc);
+      expect(serialize(doc)).toBe('false');
+    });
+
+    it('serializes DocumentNode with null body', () => {
+      const body = nullNode(loc);
+      const doc = documentNode(body, loc);
+      expect(serialize(doc)).toBe('null');
+    });
+
+    it('serializes DocumentNode with object body', () => {
+      const body = objectNode([
+        propertyNode(stringNode('name', loc), stringNode('Alice', loc), loc),
+        propertyNode(stringNode('age', loc), numberNode(30, loc), loc),
+      ], loc);
+      const doc = documentNode(body, loc);
+      const result = serialize(doc);
+      expect(result).toContain('name:');
+      expect(result).toContain('Alice');
+      expect(result).toContain('age:');
+      expect(result).toContain('30');
+    });
+
+    it('serializes DocumentNode with array body', () => {
+      const body = arrayNode([
+        numberNode(1, loc),
+        numberNode(2, loc),
+        numberNode(3, loc),
+      ], loc);
+      const doc = documentNode(body, loc);
+      const result = serialize(doc);
+      expect(result).toContain('1');
+      expect(result).toContain('2');
+      expect(result).toContain('3');
+    });
+
+    it('serializes DocumentNode with empty string body', () => {
+      const body = stringNode('', loc);
+      const doc = documentNode(body, loc);
+      expect(serialize(doc)).toBe('""');
+    });
+  });
+
+  describe('Roundtrip: serialize → parse → toNative', () => {
+    it('roundtrips number through DocumentNode', () => {
+      const body = numberNode(42, loc);
+      const doc = documentNode(body, loc);
+      const yaml = serialize(doc);
+      const parsed = parse(yaml);
+      expect(toNative(parsed)).toBe(42);
+    });
+
+    it('roundtrips string through DocumentNode', () => {
+      const body = stringNode('hello', loc);
+      const doc = documentNode(body, loc);
+      const yaml = serialize(doc);
+      const parsed = parse(yaml);
+      expect(toNative(parsed)).toBe('hello');
+    });
+
+    it('roundtrips boolean true through DocumentNode', () => {
+      const body = booleanNode(true, loc);
+      const doc = documentNode(body, loc);
+      const yaml = serialize(doc);
+      const parsed = parse(yaml);
+      expect(toNative(parsed)).toBe(true);
+    });
+
+    it('roundtrips boolean false through DocumentNode', () => {
+      const body = booleanNode(false, loc);
+      const doc = documentNode(body, loc);
+      const yaml = serialize(doc);
+      const parsed = parse(yaml);
+      expect(toNative(parsed)).toBe(false);
+    });
+
+    it('roundtrips null through DocumentNode', () => {
+      const body = nullNode(loc);
+      const doc = documentNode(body, loc);
+      const yaml = serialize(doc);
+      const parsed = parse(yaml);
+      expect(toNative(parsed)).toBe(null);
+    });
+
+    it('roundtrips object through DocumentNode', () => {
+      const body = objectNode([
+        propertyNode(stringNode('name', loc), stringNode('Alice', loc), loc),
+        propertyNode(stringNode('age', loc), numberNode(30, loc), loc),
+      ], loc);
+      const doc = documentNode(body, loc);
+      const yaml = serialize(doc);
+      const parsed = parse(yaml);
+      expect(toNative(parsed)).toEqual({ name: 'Alice', age: 30 });
+    });
+
+    it('roundtrips array through DocumentNode', () => {
+      const body = arrayNode([
+        numberNode(1, loc),
+        numberNode(2, loc),
+        numberNode(3, loc),
+      ], loc);
+      const doc = documentNode(body, loc);
+      const yaml = serialize(doc);
+      const parsed = parse(yaml);
+      expect(toNative(parsed)).toEqual([1, 2, 3]);
     });
   });
 });

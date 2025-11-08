@@ -43,5 +43,10 @@ export function toNative(node: ASTNode): unknown {
 
     case 'Array':
       return node.elements.map(toNative);
+
+    default:
+      // Exhaustiveness check - should never reach here
+      console.error('toNative: Unknown node type:', node.type, 'Full node:', node);
+      throw new Error(`Unknown node type: ${(node as any).type}`);
   }
 }
