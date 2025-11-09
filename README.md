@@ -5,9 +5,9 @@ A high-performance data format parser and serializer that uses a common AST (Abs
 ## Project Status
 
 - **Formats Completed**: 4/6 (JSON, YAML, CSV, core infrastructure)
-- **Tests Passing**: 696 across all packages
-- **Current Phase**: Integration testing & additional formats
-- **Next Step**: Add CSV to cross-format integration tests
+- **Tests Passing**: 802 across all packages
+- **Current Phase**: Ready for additional formats (XML, TOML)
+- **Next Step**: XML or TOML implementation
 
 ## Supported Formats
 
