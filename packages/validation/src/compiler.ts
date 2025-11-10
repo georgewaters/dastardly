@@ -20,6 +20,8 @@ import {
   createMaxItemsValidator,
   createItemsValidator,
   createAdditionalItemsValidator,
+  createContainsValidator,
+  createUniqueItemsValidator,
 } from './validators/array.js';
 import {
   createRequiredValidator,
@@ -28,6 +30,7 @@ import {
   createPropertiesValidator,
   createPatternPropertiesValidator,
   createAdditionalPropertiesValidator,
+  createDependenciesValidator,
 } from './validators/object.js';
 import { createEnumValidator, createConstValidator } from './validators/basic.js';
 import {
@@ -38,6 +41,7 @@ import {
 } from './validators/combinators.js';
 import { createBooleanSchemaValidator } from './validators/boolean-schema.js';
 import { createRefValidator } from './validators/ref.js';
+import { createIfThenElseValidator } from './validators/conditional.js';
 
 /**
  * Schema compiler
@@ -153,12 +157,18 @@ export class SchemaCompiler {
     if (schema.maxItems !== undefined) {
       validators.push(createMaxItemsValidator(schema.maxItems));
     }
+    if (schema.uniqueItems !== undefined) {
+      validators.push(createUniqueItemsValidator(schema.uniqueItems));
+    }
     // items must come before additionalItems
     if (schema.items !== undefined) {
       validators.push(createItemsValidator(schema.items, this));
     }
     if (schema.additionalItems !== undefined) {
       validators.push(createAdditionalItemsValidator(schema.additionalItems, schema.items, this));
+    }
+    if (schema.contains !== undefined) {
+      validators.push(createContainsValidator(schema.contains, this));
     }
 
     // Object validators
@@ -188,6 +198,9 @@ export class SchemaCompiler {
         )
       );
     }
+    if (schema.dependencies !== undefined) {
+      validators.push(createDependenciesValidator(schema.dependencies, this));
+    }
 
     // Combinator validators
     if (schema.allOf !== undefined) {
@@ -203,11 +216,15 @@ export class SchemaCompiler {
       validators.push(createNotValidator(schema.not, this));
     }
 
+    // Conditional validators
+    if (schema.if !== undefined) {
+      validators.push(createIfThenElseValidator(schema.if, schema.then, schema.else, this));
+    }
+
     // TODO: Add more keyword validators
-    // - Conditional (if/then/else)
-    // - contains, uniqueItems
-    // - dependencies, propertyNames
-    // - $ref
+    // - propertyNames
+    // - format (optional, may not implement)
+    // - contentMediaType, contentEncoding (optional)
 
     return {
       validators,

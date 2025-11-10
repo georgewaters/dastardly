@@ -209,3 +209,167 @@ export function createAdditionalItemsValidator(
     appliesTo: (node) => node.type === 'Array',
   };
 }
+
+/**
+ * Create a contains validator
+ *
+ * Validates that at least one array element matches the schema
+ *
+ * @param containsSchema - Schema that at least one element must match
+ * @param compiler - Schema compiler for caching subschemas
+ * @returns Keyword validator for contains
+ */
+export function createContainsValidator(
+  containsSchema: JSONSchema7Definition,
+  compiler: SchemaCompiler
+): KeywordValidator {
+  return {
+    validate(node, pointer, schemaPath, context) {
+      if (node.type !== 'Array') return [];
+
+      // Empty array fails contains validation
+      if (node.elements.length === 0) {
+        return [
+          {
+            path: pointer,
+            message: 'Array must contain at least one matching element',
+            keyword: 'contains',
+            schemaPath: `${schemaPath}/contains`,
+            location: node.loc,
+            params: {},
+          },
+        ];
+      }
+
+      // Check if at least one element matches the schema
+      let hasMatch = false;
+
+      for (let i = 0; i < node.elements.length; i++) {
+        const element = node.elements[i]!;
+        const elementPointer = `${pointer}/${i}`;
+        const elementSchemaPath = `${schemaPath}/contains`;
+
+        const elementErrors = validateAgainstSchema(
+          element,
+          containsSchema,
+          elementPointer,
+          elementSchemaPath,
+          context,
+          compiler
+        );
+
+        if (elementErrors.length === 0) {
+          hasMatch = true;
+          break;
+        }
+      }
+
+      if (!hasMatch) {
+        return [
+          {
+            path: pointer,
+            message: 'Array must contain at least one element matching the schema',
+            keyword: 'contains',
+            schemaPath: `${schemaPath}/contains`,
+            location: node.loc,
+            params: {},
+          },
+        ];
+      }
+
+      return [];
+    },
+
+    appliesTo: (node) => node.type === 'Array',
+  };
+}
+
+/**
+ * Create a uniqueItems validator
+ *
+ * Validates that all array elements are unique
+ *
+ * @param uniqueItems - Whether items must be unique
+ * @returns Keyword validator for uniqueItems
+ */
+export function createUniqueItemsValidator(uniqueItems: boolean): KeywordValidator {
+  if (!uniqueItems) {
+    // If uniqueItems is false, no validation needed
+    return {
+      validate() {
+        return [];
+      },
+      appliesTo: () => false,
+    };
+  }
+
+  return {
+    validate(node, pointer, schemaPath) {
+      if (node.type !== 'Array') return [];
+
+      // Use deep equality to check for duplicates
+      const seen = new Map<string, number>();
+
+      for (let i = 0; i < node.elements.length; i++) {
+        const element = node.elements[i]!;
+
+        // Serialize element for comparison (handles objects/arrays)
+        const serialized = serializeNode(element);
+
+        if (seen.has(serialized)) {
+          const firstIndex = seen.get(serialized)!;
+          return [
+            {
+              path: `${pointer}/${i}`,
+              message: `Array items must be unique (duplicate of item at index ${firstIndex})`,
+              keyword: 'uniqueItems',
+              schemaPath: `${schemaPath}/uniqueItems`,
+              location: element.loc,
+              params: { duplicateIndex: firstIndex },
+            },
+          ];
+        }
+
+        seen.set(serialized, i);
+      }
+
+      return [];
+    },
+
+    appliesTo: (node) => node.type === 'Array',
+  };
+}
+
+/**
+ * Serialize a node to a string for uniqueness comparison
+ * Uses the same logic as extractValue but returns JSON string
+ */
+function serializeNode(node: import('@dastardly/core').DataNode): string {
+  const value = extractValue(node);
+  return JSON.stringify(value);
+}
+
+/**
+ * Extract plain JavaScript value from AST node
+ */
+function extractValue(node: import('@dastardly/core').DataNode): unknown {
+  switch (node.type) {
+    case 'String':
+      return node.value;
+    case 'Number':
+      return node.value;
+    case 'Boolean':
+      return node.value;
+    case 'Null':
+      return null;
+    case 'Array':
+      return node.elements.map(extractValue);
+    case 'Object': {
+      const obj: Record<string, unknown> = {};
+      for (const prop of node.properties) {
+        obj[prop.key.value] = extractValue(prop.value);
+      }
+      return obj;
+    }
+  }
+}

@@ -291,3 +291,67 @@ export function createAdditionalPropertiesValidator(
     appliesTo: (node) => node.type === 'Object',
   };
 }
+
+/**
+ * Create a dependencies validator
+ *
+ * Validates property dependencies - when a property is present,
+ * other properties must be present (property dependencies) or
+ * a schema must be satisfied (schema dependencies)
+ *
+ * @param dependencies - Map of property names to dependencies
+ * @param compiler - Schema compiler for caching subschemas
+ * @returns Keyword validator for dependencies
+ */
+export function createDependenciesValidator(
+  dependencies: Record<string, JSONSchema7Definition | string[]>,
+  compiler: SchemaCompiler
+): KeywordValidator {
+  return {
+    validate(node, pointer, schemaPath, context) {
+      if (node.type !== 'Object') return [];
+
+      const errors = [];
+      const propertyKeys = new Set(node.properties.map((p) => p.key.value));
+
+      for (const [propertyName, dependency] of Object.entries(dependencies)) {
+        // Only apply dependency if the property is present
+        if (!propertyKeys.has(propertyName)) {
+          continue;
+        }
+
+        if (Array.isArray(dependency)) {
+          // Property dependencies - other properties must be present
+          for (const requiredProp of dependency) {
+            if (!propertyKeys.has(requiredProp)) {
+              errors.push({
+                path: pointer,
+                message: `Property '${propertyName}' depends on '${requiredProp}' being present`,
+                keyword: 'dependencies',
+                schemaPath: `${schemaPath}/dependencies/${propertyName}`,
+                location: node.loc,
+                params: { property: propertyName, missing: requiredProp },
+              });
+            }
+          }
+        } else {
+          // Schema dependency - validate object against schema
+          const depErrors = validateAgainstSchema(
+            node,
+            dependency,
+            pointer,
+            `${schemaPath}/dependencies/${propertyName}`,
+            context,
+            compiler
+          );
+
+          errors.push(...depErrors);
+        }
+      }
+
+      return errors;
+    },
+
+    appliesTo: (node) => node.type === 'Object',
+  };
+}
