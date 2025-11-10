@@ -2,9 +2,11 @@
 
 import type { JSONSchema7 } from 'json-schema';
 import type { DocumentNode, DataNode, NodeIdentity } from '@dastardly/core';
-import { computeIdentities, getByPointer } from '@dastardly/core';
+import { computeIdentities } from '@dastardly/core';
 import { ValidationCache } from './cache.js';
 import type { ValidationResult, ValidationError } from './types.js';
+import { SchemaCompiler } from './compiler.js';
+import type { CompiledSchema, ValidationContext } from './compiler-types.js';
 
 /**
  * Validator options
@@ -36,9 +38,10 @@ export interface ValidatorOptions {
  * ```
  */
 export class Validator {
-  private readonly schema: JSONSchema7;
+  private readonly compiled: CompiledSchema;
   private readonly cache: ValidationCache | null;
   private readonly failFast: boolean;
+  private readonly compiler: SchemaCompiler;
 
   /**
    * Create a new validator
@@ -47,7 +50,8 @@ export class Validator {
    * @param options - Validator options
    */
   constructor(schema: JSONSchema7, options: ValidatorOptions = {}) {
-    this.schema = schema;
+    this.compiler = new SchemaCompiler();
+    this.compiled = this.compiler.compile(schema);
     this.cache = options.cache !== false ? new ValidationCache(options.cacheSize) : null;
     this.failFast = options.failFast ?? false;
   }
@@ -64,7 +68,7 @@ export class Validator {
 
     // Validate root node
     const errors: ValidationError[] = [];
-    this.validateNode(document.body, '', this.schema, '#', identities, errors);
+    this.validateNode(document.body, '', '#', identities, errors);
 
     return {
       valid: errors.length === 0,
@@ -80,11 +84,10 @@ export class Validator {
   }
 
   /**
-   * Validate a single node against a schema
+   * Validate a single node
    *
    * @param node - AST node to validate
    * @param pointer - JSON Pointer path to node
-   * @param schema - Schema to validate against
    * @param schemaPath - Path in schema (for error reporting)
    * @param identities - Node identities map
    * @param errors - Accumulated errors
@@ -93,7 +96,6 @@ export class Validator {
   private validateNode(
     node: DataNode,
     pointer: string,
-    schema: JSONSchema7,
     schemaPath: string,
     identities: WeakMap<DataNode, NodeIdentity>,
     errors: ValidationError[]
@@ -110,16 +112,26 @@ export class Validator {
       }
     }
 
-    // Validate node
+    // Validate node using compiled validators
     const nodeErrors: ValidationError[] = [];
-    const shouldStop = this.validateNodeUncached(
-      node,
-      pointer,
-      schema,
-      schemaPath,
+    const context: ValidationContext = {
       identities,
-      nodeErrors
-    );
+      failFast: this.failFast,
+    };
+
+    for (const validator of this.compiled.validators) {
+      // Skip validators that don't apply to this node type
+      if (validator.appliesTo && !validator.appliesTo(node)) {
+        continue;
+      }
+
+      const errs = validator.validate(node, pointer, schemaPath, context);
+      nodeErrors.push(...errs);
+
+      if (this.failFast && errs.length > 0) {
+        break;
+      }
+    }
 
     // Cache result
     if (this.cache) {
@@ -133,115 +145,7 @@ export class Validator {
     }
 
     errors.push(...nodeErrors);
-    return shouldStop;
+    return this.failFast && nodeErrors.length > 0;
   }
 
-  /**
-   * Validate node without cache (implementation)
-   */
-  private validateNodeUncached(
-    node: DataNode,
-    pointer: string,
-    schema: JSONSchema7,
-    schemaPath: string,
-    identities: WeakMap<DataNode, NodeIdentity>,
-    errors: ValidationError[]
-  ): boolean {
-    // TODO: Implement schema validation keywords
-    // For now, just a placeholder that validates basic types
-
-    // Type validation
-    if (schema.type !== undefined) {
-      if (!this.validateType(node, schema.type, pointer, schemaPath, errors)) {
-        return this.failFast;
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Validate node type
-   */
-  private validateType(
-    node: DataNode,
-    schemaType: JSONSchema7['type'],
-    pointer: string,
-    schemaPath: string,
-    errors: ValidationError[]
-  ): boolean {
-    if (typeof schemaType === 'string') {
-      if (!this.nodeMatchesType(node, schemaType)) {
-        const nodeType = this.getNodeTypeForError(node);
-        errors.push({
-          path: pointer,
-          message: `Expected type ${schemaType}, got ${nodeType}`,
-          keyword: 'type',
-          schemaPath: `${schemaPath}/type`,
-          location: node.loc,
-          params: { type: schemaType },
-        });
-        return false;
-      }
-    } else if (Array.isArray(schemaType)) {
-      const matches = schemaType.some((t) => this.nodeMatchesType(node, t));
-      if (!matches) {
-        const nodeType = this.getNodeTypeForError(node);
-        errors.push({
-          path: pointer,
-          message: `Expected one of ${schemaType.join(', ')}, got ${nodeType}`,
-          keyword: 'type',
-          schemaPath: `${schemaPath}/type`,
-          location: node.loc,
-          params: { type: schemaType },
-        });
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * Check if node matches a JSON Schema type
-   */
-  private nodeMatchesType(node: DataNode, schemaType: string): boolean {
-    switch (node.type) {
-      case 'String':
-        return schemaType === 'string';
-      case 'Number':
-        // Numbers match both 'number' and 'integer' (if they're integers)
-        if (schemaType === 'number') return true;
-        if (schemaType === 'integer') return node.value % 1 === 0;
-        return false;
-      case 'Boolean':
-        return schemaType === 'boolean';
-      case 'Null':
-        return schemaType === 'null';
-      case 'Array':
-        return schemaType === 'array';
-      case 'Object':
-        return schemaType === 'object';
-    }
-  }
-
-  /**
-   * Get JSON Schema type name for error messages
-   */
-  private getNodeTypeForError(node: DataNode): string {
-    switch (node.type) {
-      case 'String':
-        return 'string';
-      case 'Number':
-        return node.value % 1 === 0 ? 'integer' : 'number';
-      case 'Boolean':
-        return 'boolean';
-      case 'Null':
-        return 'null';
-      case 'Array':
-        return 'array';
-      case 'Object':
-        return 'object';
-    }
-  }
 }
