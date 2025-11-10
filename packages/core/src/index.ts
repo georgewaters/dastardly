@@ -55,3 +55,20 @@ export { toNative } from './utils.js';
 
 // Export format package interface
 export type { FormatPackage, BaseParseOptions, BaseSerializeOptions } from './format-interface.js';
+
+// Export identity system (content-based node identity)
+export type { NodeIdentity } from './identity.js';
+export { hashNode, computeIdentities, createIdentity } from './identity.js';
+
+// Export JSON Pointer utilities (RFC 6901)
+export {
+  getByPointer,
+  hasPointer,
+  parsePointer,
+  compilePointer,
+  parentPointer,
+} from './pointer.js';
+
+// Export diffing utilities
+export type { ASTDiff } from './diff.js';
+export { diffASTs, areIdentical } from './diff.js';
