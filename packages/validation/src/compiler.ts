@@ -17,6 +17,7 @@ import {
   createMinItemsValidator,
   createMaxItemsValidator,
 } from './validators/array.js';
+import { createRequiredValidator } from './validators/object.js';
 
 /**
  * Schema compiler
@@ -90,8 +91,13 @@ export class SchemaCompiler {
       validators.push(createMaxItemsValidator(schema.maxItems));
     }
 
+    // Object validators
+    if (schema.required !== undefined) {
+      validators.push(createRequiredValidator(schema.required));
+    }
+
     // TODO: Add more keyword validators
-    // - Object validators (properties, required, additionalProperties)
+    // - Object validators (properties, additionalProperties)
     // - items (array item schema)
     // - Combinators (allOf, anyOf, oneOf, not)
     // - Conditional (if/then/else)
