@@ -98,3 +98,65 @@ export function createMultipleOfValidator(multipleOf: number): KeywordValidator 
     appliesTo: (node) => node.type === 'Number',
   };
 }
+
+/**
+ * Create an exclusiveMinimum validator
+ *
+ * @param exclusiveMinimum - Exclusive minimum numeric value
+ * @returns Keyword validator for exclusiveMinimum
+ */
+export function createExclusiveMinimumValidator(exclusiveMinimum: number): KeywordValidator {
+  return {
+    validate(node, pointer, schemaPath) {
+      if (node.type !== 'Number') return [];
+
+      if (node.value <= exclusiveMinimum) {
+        return [
+          {
+            path: pointer,
+            message: `Value ${node.value} is less than or equal to exclusive minimum ${exclusiveMinimum}`,
+            keyword: 'exclusiveMinimum',
+            schemaPath: `${schemaPath}/exclusiveMinimum`,
+            location: node.loc,
+            params: { exclusiveMinimum },
+          },
+        ];
+      }
+
+      return [];
+    },
+
+    appliesTo: (node) => node.type === 'Number',
+  };
+}
+
+/**
+ * Create an exclusiveMaximum validator
+ *
+ * @param exclusiveMaximum - Exclusive maximum numeric value
+ * @returns Keyword validator for exclusiveMaximum
+ */
+export function createExclusiveMaximumValidator(exclusiveMaximum: number): KeywordValidator {
+  return {
+    validate(node, pointer, schemaPath) {
+      if (node.type !== 'Number') return [];
+
+      if (node.value >= exclusiveMaximum) {
+        return [
+          {
+            path: pointer,
+            message: `Value ${node.value} is greater than or equal to exclusive maximum ${exclusiveMaximum}`,
+            keyword: 'exclusiveMaximum',
+            schemaPath: `${schemaPath}/exclusiveMaximum`,
+            location: node.loc,
+            params: { exclusiveMaximum },
+          },
+        ];
+      }
+
+      return [];
+    },
+
+    appliesTo: (node) => node.type === 'Number',
+  };
+}

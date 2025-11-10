@@ -37,3 +37,73 @@ export function createRequiredValidator(required: readonly string[]): KeywordVal
     appliesTo: (node) => node.type === 'Object',
   };
 }
+
+/**
+ * Create a minProperties validator
+ *
+ * Validates that an object has at least the minimum number of properties
+ *
+ * @param minProperties - Minimum number of properties
+ * @returns Keyword validator for minProperties
+ */
+export function createMinPropertiesValidator(minProperties: number): KeywordValidator {
+  return {
+    validate(node, pointer, schemaPath) {
+      if (node.type !== 'Object') return [];
+
+      const propertyCount = node.properties.length;
+
+      if (propertyCount < minProperties) {
+        return [
+          {
+            path: pointer,
+            message: `Object has ${propertyCount} properties, minimum is ${minProperties}`,
+            keyword: 'minProperties',
+            schemaPath: `${schemaPath}/minProperties`,
+            location: node.loc,
+            params: { minProperties },
+          },
+        ];
+      }
+
+      return [];
+    },
+
+    appliesTo: (node) => node.type === 'Object',
+  };
+}
+
+/**
+ * Create a maxProperties validator
+ *
+ * Validates that an object has at most the maximum number of properties
+ *
+ * @param maxProperties - Maximum number of properties
+ * @returns Keyword validator for maxProperties
+ */
+export function createMaxPropertiesValidator(maxProperties: number): KeywordValidator {
+  return {
+    validate(node, pointer, schemaPath) {
+      if (node.type !== 'Object') return [];
+
+      const propertyCount = node.properties.length;
+
+      if (propertyCount > maxProperties) {
+        return [
+          {
+            path: pointer,
+            message: `Object has ${propertyCount} properties, maximum is ${maxProperties}`,
+            keyword: 'maxProperties',
+            schemaPath: `${schemaPath}/maxProperties`,
+            location: node.loc,
+            params: { maxProperties },
+          },
+        ];
+      }
+
+      return [];
+    },
+
+    appliesTo: (node) => node.type === 'Object',
+  };
+}

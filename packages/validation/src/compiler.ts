@@ -12,12 +12,19 @@ import {
   createMinimumValidator,
   createMaximumValidator,
   createMultipleOfValidator,
+  createExclusiveMinimumValidator,
+  createExclusiveMaximumValidator,
 } from './validators/number.js';
 import {
   createMinItemsValidator,
   createMaxItemsValidator,
 } from './validators/array.js';
-import { createRequiredValidator } from './validators/object.js';
+import {
+  createRequiredValidator,
+  createMinPropertiesValidator,
+  createMaxPropertiesValidator,
+} from './validators/object.js';
+import { createEnumValidator, createConstValidator } from './validators/basic.js';
 
 /**
  * Schema compiler
@@ -61,6 +68,14 @@ export class SchemaCompiler {
       validators.push(createTypeValidator(schema.type));
     }
 
+    // Enum/const validators (higher priority than type)
+    if (schema.enum !== undefined) {
+      validators.push(createEnumValidator(schema.enum));
+    }
+    if (schema.const !== undefined) {
+      validators.push(createConstValidator(schema.const));
+    }
+
     // String validators
     if (schema.minLength !== undefined) {
       validators.push(createMinLengthValidator(schema.minLength));
@@ -79,6 +94,12 @@ export class SchemaCompiler {
     if (schema.maximum !== undefined) {
       validators.push(createMaximumValidator(schema.maximum));
     }
+    if (schema.exclusiveMinimum !== undefined) {
+      validators.push(createExclusiveMinimumValidator(schema.exclusiveMinimum));
+    }
+    if (schema.exclusiveMaximum !== undefined) {
+      validators.push(createExclusiveMaximumValidator(schema.exclusiveMaximum));
+    }
     if (schema.multipleOf !== undefined) {
       validators.push(createMultipleOfValidator(schema.multipleOf));
     }
@@ -95,13 +116,18 @@ export class SchemaCompiler {
     if (schema.required !== undefined) {
       validators.push(createRequiredValidator(schema.required));
     }
+    if (schema.minProperties !== undefined) {
+      validators.push(createMinPropertiesValidator(schema.minProperties));
+    }
+    if (schema.maxProperties !== undefined) {
+      validators.push(createMaxPropertiesValidator(schema.maxProperties));
+    }
 
     // TODO: Add more keyword validators
     // - Object validators (properties, additionalProperties)
     // - items (array item schema)
     // - Combinators (allOf, anyOf, oneOf, not)
     // - Conditional (if/then/else)
-    // - Enum/const
     // - $ref
 
     return {
