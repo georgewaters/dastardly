@@ -95,7 +95,10 @@ export class JSONParser extends TreeSitterParser {
     };
 
     const stack: StackFrame[] = [];
-    const results = new Map<SyntaxNode, DataNode>();
+    // Use a stable key (startIndex-endIndex) instead of object identity
+    // Tree-sitter may reuse/recycle SyntaxNode wrapper objects, breaking Map lookups
+    const results = new Map<string, DataNode>();
+    const nodeKey = (n: SyntaxNode) => `${n.startIndex}-${n.endIndex}`;
 
     // Push the root node onto the stack
     stack.push({ node, type: node.type as 'object' | 'array', properties: [], elements: [] });
@@ -123,7 +126,7 @@ export class JSONParser extends TreeSitterParser {
           (child) => {
             const keyNode = child.childForFieldName('key');
             const valueNode = child.childForFieldName('value');
-            return keyNode && valueNode && results.has(valueNode);
+            return keyNode && valueNode && results.has(nodeKey(valueNode));
           }
         );
 
@@ -134,21 +137,21 @@ export class JSONParser extends TreeSitterParser {
             const valueNode = pairNode.childForFieldName('value')!;
             const loc = nodeToLocation(pairNode, this.sourceFormat);
             const key = this.convertString(keyNode, source);
-            const value = results.get(valueNode)!;
+            const value = results.get(nodeKey(valueNode))!;
             frame.properties!.push(propertyNode(key, value, loc));
           }
 
           const result = objectNode(frame.properties!, frame.loc!);
-          results.set(frame.node, result);
+          results.set(nodeKey(frame.node), result);
           stack.pop();
         } else {
           // Push unprocessed value nodes onto stack
           for (const pairNode of frame.pendingChildren) {
             const valueNode = pairNode.childForFieldName('value');
-            if (valueNode && !results.has(valueNode)) {
+            if (valueNode && !results.has(nodeKey(valueNode))) {
               if (this.isLeafNode(valueNode.type)) {
                 // Process leaf nodes immediately
-                results.set(valueNode, this.convertLeafNode(valueNode, source));
+                results.set(nodeKey(valueNode), this.convertLeafNode(valueNode, source));
               } else {
                 // Push non-leaf nodes onto stack
                 stack.push({
@@ -178,25 +181,25 @@ export class JSONParser extends TreeSitterParser {
 
         // Check if all children are processed
         const allChildrenProcessed = frame.pendingChildren.every((child) =>
-          results.has(child)
+          results.has(nodeKey(child))
         );
 
         if (allChildrenProcessed) {
           // All children processed - create the array node
           for (const elementNode of frame.pendingChildren) {
-            frame.elements!.push(results.get(elementNode)!);
+            frame.elements!.push(results.get(nodeKey(elementNode))!);
           }
 
           const result = arrayNode(frame.elements!, frame.loc!);
-          results.set(frame.node, result);
+          results.set(nodeKey(frame.node), result);
           stack.pop();
         } else {
           // Push unprocessed element nodes onto stack
           for (const elementNode of frame.pendingChildren) {
-            if (!results.has(elementNode)) {
+            if (!results.has(nodeKey(elementNode))) {
               if (this.isLeafNode(elementNode.type)) {
                 // Process leaf nodes immediately
-                results.set(elementNode, this.convertLeafNode(elementNode, source));
+                results.set(nodeKey(elementNode), this.convertLeafNode(elementNode, source));
               } else {
                 // Push non-leaf nodes onto stack
                 stack.push({
@@ -212,7 +215,7 @@ export class JSONParser extends TreeSitterParser {
       }
     }
 
-    return results.get(node)!;
+    return results.get(nodeKey(node))!;
   }
 
   /**
