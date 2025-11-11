@@ -94,6 +94,39 @@ export interface Language {
 }
 
 /**
+ * Parse options for tree-sitter parser.
+ */
+export interface ParseOptions {
+  /**
+   * Size of the internal parsing buffer.
+   *
+   * Default: 32KB (32768 bytes)
+   *
+   * If parsing input larger than 32KB, you must specify a larger bufferSize
+   * or tree-sitter will throw "Invalid argument" error.
+   *
+   * Recommended values:
+   * - For files up to 100KB: 128 * 1024 (128KB)
+   * - For files up to 1MB: 1024 * 1024 (1MB)
+   * - For files up to 10MB: 10 * 1024 * 1024 (10MB)
+   *
+   * Note: Setting this too large may impact memory usage and performance.
+   */
+  bufferSize?: number;
+
+  /**
+   * Array of ranges to include when parsing the input.
+   * @internal - Not part of stable API in v1
+   */
+  includedRanges?: Array<{
+    startIndex: number;
+    endIndex: number;
+    startPosition: TreeSitterPoint;
+    endPosition: TreeSitterPoint;
+  }>;
+}
+
+/**
  * Parser runtime interface.
  * Abstracts over tree-sitter (native) and web-tree-sitter (WASM).
  */
@@ -109,8 +142,9 @@ export interface ParserRuntime {
    * @param source - Source code to parse
    * @param oldTree - Optional previous parse tree for incremental parsing
    *                  Tree-sitter will reuse unchanged portions for better performance
+   * @param options - Optional parse options (bufferSize, includedRanges)
    *
    * @internal - oldTree parameter is not part of stable API in v1
    */
-  parse(source: string, oldTree?: SyntaxTree): SyntaxTree;
+  parse(source: string, oldTree?: SyntaxTree, options?: ParseOptions): SyntaxTree;
 }

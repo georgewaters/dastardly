@@ -9,6 +9,7 @@ export type {
   SyntaxTree,
   Language,
   ParserRuntime,
+  ParseOptions,
 } from './types.js';
 
 // Runtime implementations
