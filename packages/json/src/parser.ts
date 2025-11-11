@@ -72,12 +72,167 @@ export class JSONParser extends TreeSitterParser {
     return documentNode(valueNode, loc);
   }
 
+  /**
+   * Convert a tree-sitter node to a DataNode using an iterative algorithm.
+   * This avoids stack overflow issues with deeply nested structures.
+   */
   private convertValue(node: SyntaxNode, source: string): DataNode {
+    // For leaf nodes, handle them directly without the stack
+    if (this.isLeafNode(node.type)) {
+      return this.convertLeafNode(node, source);
+    }
+
+    // Use explicit stack for non-leaf nodes (objects and arrays)
+    type StackFrame = {
+      node: SyntaxNode;
+      type: 'object' | 'array' | 'property';
+      properties?: PropertyNode[];
+      elements?: DataNode[];
+      pendingChildren?: SyntaxNode[];
+      keyNode?: SyntaxNode;
+      valueNode?: SyntaxNode;
+      loc?: ReturnType<typeof nodeToLocation>;
+    };
+
+    const stack: StackFrame[] = [];
+    const results = new Map<SyntaxNode, DataNode>();
+
+    // Push the root node onto the stack
+    stack.push({ node, type: node.type as 'object' | 'array', properties: [], elements: [] });
+
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]!;
+
+      if (frame.type === 'object') {
+        // Process object node
+        if (!frame.pendingChildren) {
+          // First time processing this object - collect pair nodes
+          frame.pendingChildren = [];
+          frame.properties = [];
+          frame.loc = nodeToLocation(frame.node, this.sourceFormat);
+
+          for (const child of frame.node.children) {
+            if (child.type === 'pair') {
+              frame.pendingChildren.push(child);
+            }
+          }
+        }
+
+        // Check if all children are processed
+        const allChildrenProcessed = frame.pendingChildren.every(
+          (child) => {
+            const keyNode = child.childForFieldName('key');
+            const valueNode = child.childForFieldName('value');
+            return keyNode && valueNode && results.has(valueNode);
+          }
+        );
+
+        if (allChildrenProcessed) {
+          // All children processed - create the object node
+          for (const pairNode of frame.pendingChildren) {
+            const keyNode = pairNode.childForFieldName('key')!;
+            const valueNode = pairNode.childForFieldName('value')!;
+            const loc = nodeToLocation(pairNode, this.sourceFormat);
+            const key = this.convertString(keyNode, source);
+            const value = results.get(valueNode)!;
+            frame.properties!.push(propertyNode(key, value, loc));
+          }
+
+          const result = objectNode(frame.properties!, frame.loc!);
+          results.set(frame.node, result);
+          stack.pop();
+        } else {
+          // Push unprocessed value nodes onto stack
+          for (const pairNode of frame.pendingChildren) {
+            const valueNode = pairNode.childForFieldName('value');
+            if (valueNode && !results.has(valueNode)) {
+              if (this.isLeafNode(valueNode.type)) {
+                // Process leaf nodes immediately
+                results.set(valueNode, this.convertLeafNode(valueNode, source));
+              } else {
+                // Push non-leaf nodes onto stack
+                stack.push({
+                  node: valueNode,
+                  type: valueNode.type as 'object' | 'array',
+                  properties: [],
+                  elements: [],
+                });
+              }
+            }
+          }
+        }
+      } else if (frame.type === 'array') {
+        // Process array node
+        if (!frame.pendingChildren) {
+          // First time processing this array - collect element nodes
+          frame.pendingChildren = [];
+          frame.elements = [];
+          frame.loc = nodeToLocation(frame.node, this.sourceFormat);
+
+          for (const child of frame.node.children) {
+            if (this.isValueNode(child.type)) {
+              frame.pendingChildren.push(child);
+            }
+          }
+        }
+
+        // Check if all children are processed
+        const allChildrenProcessed = frame.pendingChildren.every((child) =>
+          results.has(child)
+        );
+
+        if (allChildrenProcessed) {
+          // All children processed - create the array node
+          for (const elementNode of frame.pendingChildren) {
+            frame.elements!.push(results.get(elementNode)!);
+          }
+
+          const result = arrayNode(frame.elements!, frame.loc!);
+          results.set(frame.node, result);
+          stack.pop();
+        } else {
+          // Push unprocessed element nodes onto stack
+          for (const elementNode of frame.pendingChildren) {
+            if (!results.has(elementNode)) {
+              if (this.isLeafNode(elementNode.type)) {
+                // Process leaf nodes immediately
+                results.set(elementNode, this.convertLeafNode(elementNode, source));
+              } else {
+                // Push non-leaf nodes onto stack
+                stack.push({
+                  node: elementNode,
+                  type: elementNode.type as 'object' | 'array',
+                  properties: [],
+                  elements: [],
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return results.get(node)!;
+  }
+
+  /**
+   * Check if a node type is a leaf node (not object or array).
+   */
+  private isLeafNode(type: string): boolean {
+    return (
+      type === 'string' ||
+      type === 'number' ||
+      type === 'true' ||
+      type === 'false' ||
+      type === 'null'
+    );
+  }
+
+  /**
+   * Convert a leaf node (string, number, boolean, null) to a DataNode.
+   */
+  private convertLeafNode(node: SyntaxNode, source: string): DataNode {
     switch (node.type) {
-      case 'object':
-        return this.convertObject(node, source);
-      case 'array':
-        return this.convertArray(node, source);
       case 'string':
         return this.convertString(node, source);
       case 'number':
@@ -95,53 +250,6 @@ export class JSONParser extends TreeSitterParser {
           source
         );
     }
-  }
-
-  private convertObject(node: SyntaxNode, source: string): ObjectNode {
-    const loc = nodeToLocation(node, this.sourceFormat);
-    const properties: PropertyNode[] = [];
-
-    for (const child of node.children) {
-      if (child.type === 'pair') {
-        properties.push(this.convertPair(child, source));
-      }
-    }
-
-    return objectNode(properties, loc);
-  }
-
-  private convertPair(node: SyntaxNode, source: string): PropertyNode {
-    const loc = nodeToLocation(node, this.sourceFormat);
-
-    const keyNode = node.childForFieldName('key');
-    const valueNode = node.childForFieldName('value');
-
-    if (!keyNode || !valueNode) {
-      throw new ParseError(
-        'Invalid object pair: missing key or value',
-        loc,
-        source
-      );
-    }
-
-    const key = this.convertString(keyNode, source);
-    const value = this.convertValue(valueNode, source);
-
-    return propertyNode(key, value, loc);
-  }
-
-  private convertArray(node: SyntaxNode, source: string): ArrayNode {
-    const loc = nodeToLocation(node, this.sourceFormat);
-    const elements: DataNode[] = [];
-
-    for (const child of node.children) {
-      // Skip structural tokens like [ ] ,
-      if (this.isValueNode(child.type)) {
-        elements.push(this.convertValue(child, source));
-      }
-    }
-
-    return arrayNode(elements, loc);
   }
 
   private convertString(node: SyntaxNode, source: string): StringNode {
