@@ -1,6 +1,6 @@
 {
   "name": "@bakes/dastardly-integration-tests",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Integration tests for cross-format conversion and validation",
   "private": true,
   "type": "module",

@@ -1,6 +1,6 @@
 {
   "name": "@bakes/dastardly-json",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "JSON parser and serializer for dASTardly",
   "type": "module",
   "main": "dist/index.js",

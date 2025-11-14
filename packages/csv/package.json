@@ -1,6 +1,6 @@
 {
   "name": "@bakes/dastardly-csv",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "CSV parser and serializer for dASTardly",
   "type": "module",
   "main": "dist/index.js",
